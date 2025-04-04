@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Technician Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" media="print" onload="this.media='all'">
+    <style>
+        /* Font preloads */
+        @font-face {
+            font-family: 'Segoe UI';
+            font-display: swap;
+        }
+        
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #166088;
+            --accent-color: #4fc3dc;
+            --background-color: #f8f9fa;
+            --text-color: #333;
+            --light-gray: #e9ecef;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.4;
+            font-size: 0.95rem;
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 10px 15px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #00b4db, #0083b0, #6a11cb, #2575fc);
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            box-shadow: var(--box-shadow);
+            position: relative;
+        }
+        
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+        
+        .thai-date {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 1rem;
+            color: white;
+        }
+        
+        .dev-info {
+            position: absolute;
+            bottom: 10px;
+            right: 20px;
+            font-size: 0.8rem;
+            color: white;
+            opacity: 0.8;
+        }
+        
+        .dashboard {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            justify-content: flex-end;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 12px 10px;
+            box-shadow: var(--box-shadow);
+            transition: transform 0.3s ease;
+            width: 180px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card h3 {
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 6px;
+            width: 100%;
+            font-size: 1.1rem;
+        }
+        
+        .card-icon {
+            font-size: 36px;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+        }
+        
+        .card p {
+            margin-top: 10px;
+        }
+        
+        .count-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #114477; /* สีน้ำเงินเข้ม */
+            margin-top: 10px;
+        }
+        
+        .card-detail-line {
+            margin: 5px 0;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            padding: 1px 0;
+        }
+        
+        .card-detail-label {
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+        
+        .card-detail-value {
+            font-weight: bold;
+            color: #114477;
+            font-size: 16px;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 15px;
+            max-width: 100%;
+            width: 100%;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: auto;
+        }
+        
+        th, td {
+            padding: 6px 8px;
+            text-align: left;
+            border-bottom: 1px solid var(--light-gray);
+            border-right: 1px solid var(--light-gray);
+        }
+        
+        td {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
+        }
+        
+        th {
+            background-color: var(--secondary-color);
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            font-weight: bold;
+            white-space: normal;
+            word-wrap: break-word;
+            hyphens: auto;
+            height: auto;
+            vertical-align: bottom;
+            text-align: center;
+            line-height: 1.2;
+            padding: 10px 6px;
+            cursor: pointer;
+        }
+        
+        th.sorting:after {
+            content: '\2195'; /* แสดงลูกศรขึ้นลง */
+            margin-left: 5px;
+            font-size: 1.2em; /* เพิ่มขนาดสัญลักษณ์ */
+            opacity: 0.7;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        
+        th.sorting-asc:after {
+            content: '\2191'; /* แสดงลูกศรขึ้น */
+            margin-left: 5px;
+            font-size: 1.2em; /* เพิ่มขนาดสัญลักษณ์ */
+            display: inline-block;
+            vertical-align: middle;
+        }
+        
+        th.sorting-desc:after {
+            content: '\2193'; /* แสดงลูกศรลง */
+            margin-left: 5px;
+            font-size: 1.2em; /* เพิ่มขนาดสัญลักษณ์ */
+            display: inline-block;
+            vertical-align: middle;
+        }
+        
+        /* ปรับขนาดคอลัมน์ให้เหมาะสม */
+        th.col-sm {
+            width: 60px;
+            min-width: 60px;
+            max-width: 70px;
+        }
+        
+        th.col-md {
+            width: 90px;
+            min-width: 90px;
+            max-width: 110px;
+        }
+        
+        th.col-lg {
+            width: 120px;
+            min-width: 110px;
+            max-width: 140px;
+        }
+        
+        td.truncate {
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        /* เพิ่ม tooltip เมื่อนำเมาส์ไปวางบนเซลล์ที่เนื้อหาถูกตัด */
+        td.truncate:hover {
+            position: relative;
+        }
+        
+        td.truncate:hover::after {
+            content: attr(data-full-text);
+            position: absolute;
+            left: 0;
+            top: 100%;
+            background-color: #333;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            z-index: 100;
+            white-space: normal;
+            max-width: 300px;
+            word-break: break-word;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        tr:nth-child(even) {
+            background-color: var(--light-gray);
+        }
+        
+        tr:hover {
+            background-color: rgba(79, 195, 220, 0.1);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.5rem;
+            color: var(--secondary-color);
+        }
+        
+        .error {
+            background-color: #ffdddd;
+            color: #ff0000;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 10px;
+            background: linear-gradient(135deg, #00b4db, #0083b0, #6a11cb, #2575fc);
+            color: white;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        
+        /* เพิ่มสไตล์สำหรับการแบ่งหน้าและการค้นหา */
+        .table-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 8px;
+            width: 100%;
+        }
+        
+        .search-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .search-input {
+            padding: 6px 10px;
+            border: 1px solid var(--light-gray);
+            border-radius: 4px;
+            width: 250px;
+            font-size: 0.95rem;
+        }
+        
+        .rows-per-page {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        select, button {
+            padding: 6px 10px;
+            border: 1px solid var(--light-gray);
+            border-radius: 4px;
+            background-color: white;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        button {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: var(--primary-color);
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 15px;
+            gap: 3px;
+            flex-wrap: wrap;
+        }
+        
+        .pagination button {
+            min-width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .pagination button.active {
+            background-color: var(--accent-color);
+            color: var(--text-color);
+            font-weight: bold;
+        }
+        
+        .pagination button:disabled {
+            background-color: var(--light-gray);
+            color: #888;
+            cursor: not-allowed;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .thai-date {
+                position: static;
+                display: block;
+                margin-top: 10px;
+                text-align: center;
+            }
+            
+            .table-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-container {
+                width: 100%;
+            }
+            
+            .search-input {
+                flex-grow: 1;
+            }
+        }
+        
+        /* เพิ่มสไตล์สำหรับ multiselect dropdown */
+        .multiselect-dropdown {
+            position: relative;
+            width: 180px;
+            font-size: 0.9rem;
+        }
+        
+        .multiselect-dropdown-header {
+            padding: 6px 10px;
+            background-color: white;
+            border: 1px solid var(--light-gray);
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .multiselect-dropdown-header.active {
+            border-color: var(--primary-color);
+        }
+        
+        .multiselect-dropdown-header:after {
+            content: '';
+        }
+        
+        .multiselect-dropdown-header.active:after {
+            content: '';
+        }
+        
+        .multiselect-dropdown-content {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background-color: white;
+            border: 1px solid var(--light-gray);
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 100;
+            display: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .multiselect-dropdown-content.show {
+            display: block;
+        }
+        
+        .multiselect-option {
+            padding: 6px 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+        
+        .multiselect-option:hover {
+            background-color: var(--light-gray);
+        }
+        
+        .multiselect-option input {
+            margin-right: 8px;
+        }
+        
+        .multiselect-select-all {
+            padding: 6px 10px;
+            border-bottom: 1px solid var(--light-gray);
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+        
+        .multiselect-select-all input {
+            margin-right: 8px;
+        }
+        
+        .multiselect-dropdown-header-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+        }
+        
+        .filter-label {
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            white-space: nowrap;
+        }
+        
+        .filter-container {
+            background-color: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: var(--box-shadow);
+            margin-bottom: 15px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Data Technician Dashboard</h1>
+            <div id="thai-date" class="thai-date"></div>
+            <div class="dev-info">Dev.by Installation & Maintenance</div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div id="error-message" class="error" style="display: none;"></div>
+        
+        <div id="loading" class="loading">
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <div style="border: 5px solid #f3f3f3; border-top: 5px solid #3498db; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite;"></div>
+                <p style="margin-top: 15px;">กำลังโหลดข้อมูล...</p>
+            </div>
+            <style>
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+            </style>
+        </div>
+        
+        <div id="dashboard" class="dashboard" style="display: none;">
+            <!-- Dashboard cards will be populated here -->
+        </div>
+        
+        <div id="table-container" class="table-container" style="display: none;">
+            <div class="table-controls">
+                <div class="search-container">
+                    <input type="text" id="search-input" class="search-input" placeholder="ค้นหาข้อมูล...">
+                    <button id="search-button">ค้นหา</button>
+                    <button id="refresh-button">รีเฟรช</button>
+                </div>
+                <div class="rows-per-page">
+                    <label for="rows-select">แสดง:</label>
+                    <select id="rows-select">
+                        <option value="25" selected>25 แถว</option>
+                        <option value="50">50 แถว</option>
+                        <option value="100">100 แถว</option>
+                        <option value="500">500 แถว</option>
+                    </select>
+                    <button id="download-excel">ดาวน์โหลด Excel</button>
+                </div>
+            </div>
+            <table id="data-table">
+                <!-- Table will be populated here -->
+            </table>
+            <div id="pagination" class="pagination">
+                <!-- Pagination will be populated here -->
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Data Technician Dashboard</p>
+        </div>
+    </footer>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <script>
+        // CSV URL
+        const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSYKfT03Rf95K3lXJf1n20H2aLietUGI0wjFdC21AusbFEVcsT61-BR4v_s3Na9YLcpCIxyWuyOW-uF/pub?gid=813367910&single=true&output=csv";
+        
+        // Elements
+        const loadingElement = document.getElementById('loading');
+        const tableContainerElement = document.getElementById('table-container');
+        const dataTableElement = document.getElementById('data-table');
+        const errorMessageElement = document.getElementById('error-message');
+        const thaiDateElement = document.getElementById('thai-date');
+        const dashboardElement = document.getElementById('dashboard');
+        const paginationElement = document.getElementById('pagination');
+        const searchInputElement = document.getElementById('search-input');
+        const searchButtonElement = document.getElementById('search-button');
+        const rowsSelectElement = document.getElementById('rows-select');
+        const downloadExcelElement = document.getElementById('download-excel');
+        
+        // Data state
+        let allData = []; // Original filtered data
+        let displayData = []; // Data after search filter
+        let currentPage = 1;
+        let rowsPerPage = 25; // Default
+        let searchTerm = '';
+        let currentSortColumn = ''; // คอลัมน์ที่ใช้เรียงลำดับปัจจุบัน
+        let currentSortDirection = 'asc'; // ทิศทางการเรียงลำดับปัจจุบัน (asc หรือ desc)
+        let csvCache = null; // สำหรับเก็บข้อมูล CSV ในหน่วยความจำ
+        let lastFetchTime = 0; // เวลาที่ดึงข้อมูลครั้งล่าสุด
+        const CACHE_DURATION = 5 * 60 * 1000; // 5 นาที (เป็นมิลลิวินาที)
+        
+        // แสดง loading animation ที่ดีขึ้น
+        loadingElement.innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <div style="border: 5px solid #f3f3f3; border-top: 5px solid #3498db; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite;"></div>
+                <p style="margin-top: 15px;">กำลังโหลดข้อมูล...</p>
+            </div>
+            <style>
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+            </style>
+        `;
+        
+        // Thai date formatter
+        function formatThaiDate() {
+            const now = new Date();
+            const thaiMonths = [
+                'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+                'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+            ];
+            const day = now.getDate();
+            const month = thaiMonths[now.getMonth()];
+            const year = now.getFullYear() + 543; // Convert to Buddhist Era
+            
+            // Add time
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            
+            return `วันที่ ${day} ${month} พ.ศ. ${year} เวลา ${hours}:${minutes}:${seconds} น.`;
+        }
+        
+        // Update Thai date
+        function updateThaiDate() {
+            thaiDateElement.textContent = formatThaiDate();
+        }
+        
+        // Main function to fetch and process data
+        async function fetchDataAndVisualize() {
+            try {
+                // Update Thai date
+                updateThaiDate();
+                
+                // Start real-time clock update (ลดเป็น 5 วินาทีต่อครั้ง)
+                setInterval(updateThaiDate, 5000);
+                
+                const now = Date.now();
+                
+                // ตรวจสอบแคช ถ้ามีและยังไม่หมดอายุให้ใช้แคช
+                if (csvCache && (now - lastFetchTime < CACHE_DURATION)) {
+                    processData(csvCache);
+                    return;
+                }
+                
+                // Fetch CSV data
+                const response = await fetch(csvUrl);
+                const csvText = await response.text();
+                
+                // บันทึกลงแคช
+                csvCache = csvText;
+                lastFetchTime = now;
+                
+                // ประมวลผลข้อมูล
+                processData(csvText);
+            } catch (error) {
+                showError("Error fetching data: " + error.message);
+            }
+        }
+        
+        // เพิ่มการโหลดข้อมูลแบบ lazy loading
+        function setupLazyLoading() {
+            // ตรวจสอบว่าเบราว์เซอร์รองรับ Intersection Observer หรือไม่
+            if ('IntersectionObserver' in window) {
+                const tableContainer = document.getElementById('table-container');
+                
+                // สร้าง observer เพื่อดักจับเมื่อตารางปรากฏในหน้าจอ
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            // เมื่อตารางปรากฏในหน้าจอ ให้ทำการโหลดข้อมูล
+                            renderTable();
+                            // ยกเลิกการดักจับหลังจากโหลดเสร็จ
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, {
+                    rootMargin: '100px', // โหลดล่วงหน้าเมื่อใกล้จะเห็นตาราง 100px
+                    threshold: 0.1 // โหลดเมื่อตารางปรากฏอย่างน้อย 10%
+                });
+                
+                // เริ่มดักจับตาราง
+                observer.observe(tableContainer);
+            } else {
+                // ถ้าเบราว์เซอร์ไม่รองรับ Intersection Observer ให้โหลดตารางตามปกติ
+                renderTable();
+            }
+        }
+        
+        // ปรับปรุงฟังก์ชัน processData ให้ใช้ lazy loading
+        function processData(csvText) {
+            // Parse CSV data
+            Papa.parse(csvText, {
+                header: true,
+                complete: function(results) {
+                    const data = results.data;
+                    
+                    // Filter columns from data
+                    const columnsToKeep = [0, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 16, 17, 18, 19, 22, 24, 25, 27, 31];
+                    
+                    // Filter data to only include specified columns
+                    const filteredData = filterColumns(data, columnsToKeep);
+                    
+                    // Store the filtered data
+                    allData = filteredData;
+                    displayData = [...allData]; // Initially, display all filtered data
+                    
+                    // Hide loading and show content
+                    loadingElement.style.display = 'none';
+                    dashboardElement.style.display = 'flex';
+                    tableContainerElement.style.display = 'block';
+                    
+                    // Process and display data
+                    createDashboardSummary(filteredData);
+                    createFilterOptions(); // สร้าง filter options
+                    
+                    // ใช้ lazy loading แทนการโหลดตารางทันที
+                    setupLazyLoading();
+                },
+                error: function(error) {
+                    showError("Error parsing CSV: " + error.message);
+                }
+            });
+        }
+        
+        // Filter columns from data
+        function filterColumns(data, columnsToKeep) {
+            if (data.length === 0) return [];
+            
+            // Get all column names
+            const allColumns = Object.keys(data[0]);
+            
+            // Define the columns to keep (by their indices - 0-based for JavaScript)
+            // A,B,D,E,F,G,H,I,J,K,L,N,P,Q,R,S,T,W,Y,Z,AB,AF
+            // เลือกตามอักษร: A=0, B=1, D=3, E=4, F=5, G=6, H=7, I=8, J=9, K=10, L=11, N=13, P=15, Q=16, R=17, S=18, T=19, W=22, Y=24, Z=25, AB=27, AF=31
+            const selectedColumnIndices = [0, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 16, 17, 18, 19, 22, 24, 25, 27, 31];
+            
+            // Create a filtered subset of columns to keep
+            const selectedColumns = selectedColumnIndices.map(index => {
+                // Make sure index is within bounds
+                if (index < allColumns.length) {
+                    return allColumns[index];
+                }
+                return null;
+            }).filter(col => col !== null);
+            
+            // Get column B name (index 1) and column I name (index 8)
+            const columnBName = allColumns[1];
+            const columnIName = allColumns[8]; // Column I
+            
+            // Create new data array with only the selected columns AND filtered rows
+            return data
+                .filter(row => (row[columnBName] === "WW-Provider" || row[columnBName] === "เถ้าแก่เทค") && row[columnIName] !== "TVG")
+                .map(row => {
+                    const newRow = {};
+                    selectedColumns.forEach(col => {
+                        newRow[col] = row[col];
+                    });
+                    return newRow;
+                });
+        }
+        
+        // นับจำนวนหัวหน้าจากคอลัมน์สถานะกองงาน
+        function countLeadersInData(data) {
+            // ใช้คอลัมน์สถานะกองงาน
+            const columnName = 'สถานะกองงาน';
+            
+            // นับจำนวนข้อมูลที่มีคำว่า "หัวหน้า"
+            const leadersCount = data.filter(row => {
+                const value = row[columnName];
+                return value && value.toString().includes('หัวหน้า');
+            }).length;
+            
+            // คืนค่าจำนวนที่นับได้
+            return leadersCount;
+        }
+        
+        // สร้างการ์ดสำหรับแสดงจำนวนหัวหน้า
+        function createLeadersCard(data) {
+            const leadersCount = countLeadersInData(data);
+            
+            // สร้างการ์ด
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+            <i class="fas fa-building card-icon"></i>
+            <h3>จำนวนช่าง<br>(กองงาน)</h3>
+            <div class="count-number">${leadersCount.toLocaleString()}</div>
+            `;
+            
+            dashboardElement.appendChild(card);
+        }
+        
+        // นับจำนวนช่าง
+        function countTechsInData(data) {
+            // นับจำนวนข้อมูลทั้งหมด
+            return data.length;
+        }
+        
+        // สร้างการ์ดสำหรับแสดงจำนวนช่าง(คน)
+        function createTechsCard(data) {
+            const techsCount = countTechsInData(data);
+            
+            // สร้างการ์ด
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+            <i class="fas fa-users card-icon"></i>
+            <h3>จำนวนช่าง<br>(คน)</h3>
+            <div class="count-number">${techsCount.toLocaleString()}</div>
+            `;
+            
+            dashboardElement.appendChild(card);
+        }
+        
+        // นับจำนวนช่างติดตั้ง
+        function countInstallTechsInData(data) {
+            // นับจำนวนข้อมูลที่มีคำว่า "Install" หรือ "Install-Repair" ในคอลัมน์ Type of Provider Group
+            const installCount = data.filter(row => {
+                const value = row['Type of Provider Group'];
+                return value && (value.toString().includes('Install') || value.toString().includes('Install-Repair'));
+            }).length;
+            
+            return installCount;
+        }
+        
+        // สร้างการ์ดสำหรับแสดงจำนวนช่างติดตั้ง
+        function createInstallTechsCard(data) {
+            const installCount = countInstallTechsInData(data);
+            
+            // นับจำนวนกองงานช่างติดตั้ง (นับเฉพาะที่มีคำว่า "หัวหน้า" ในคอลัมน์ "สถานะกองงาน")
+            const installGroupCount = data.filter(row => {
+                const typeValue = row['Type of Provider Group'];
+                const statusValue = row['สถานะกองงาน'];
+                return typeValue && 
+                      (typeValue.toString().includes('Install') || typeValue.toString().includes('Install-Repair')) && 
+                      statusValue && 
+                      statusValue.toString().includes('หัวหน้า');
+            }).length;
+            
+            // สร้างการ์ด
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+            <i class="fas fa-tools card-icon"></i>
+            <h3>ช่างติดตั้ง</h3>
+            <div class="card-detail-line">
+                <span class="card-detail-value">${installGroupCount.toLocaleString()}</span>
+                <span class="card-detail-label">กองงาน</span>
+            </div>
+            <div class="card-detail-line">
+                <span class="card-detail-value">${installCount.toLocaleString()}</span>
+                <span class="card-detail-label">คน</span>
+            </div>
+            `;
+            
+            dashboardElement.appendChild(card);
+        }
+        
+        // นับจำนวนช่างซ่อม
+        function countRepairTechsInData(data) {
+            // นับจำนวนข้อมูลที่มีคำว่า "Repair" ในคอลัมน์ Type of Provider Group
+            const repairCount = data.filter(row => {
+                const value = row['Type of Provider Group'];
+                return value && (value.toString().includes('Repair') || value.toString().includes('Repair Only'));
+            }).length;
+            
+            return repairCount;
+        }
+        
+        // สร้างการ์ดสำหรับแสดงจำนวนช่างซ่อม
+        function createRepairTechsCard(data) {
+            const repairCount = countRepairTechsInData(data);
+            
+            // นับจำนวนกองงานช่างซ่อม (นับเฉพาะที่มีคำว่า "หัวหน้า" ในคอลัมน์ "สถานะกองงาน")
+            const repairGroupCount = data.filter(row => {
+                const typeValue = row['Type of Provider Group'];
+                const statusValue = row['สถานะกองงาน'];
+                return typeValue && 
+                      (typeValue.toString().includes('Repair') || typeValue.toString().includes('Repair Only')) && 
+                      statusValue && 
+                      statusValue.toString().includes('หัวหน้า');
+            }).length;
+            
+            // สร้างการ์ด
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+            <i class="fas fa-wrench card-icon"></i>
+            <h3>ช่างซ่อม</h3>
+            <div class="card-detail-line">
+                <span class="card-detail-value">${repairGroupCount.toLocaleString()}</span>
+                <span class="card-detail-label">กองงาน</span>
+            </div>
+            <div class="card-detail-line">
+                <span class="card-detail-value">${repairCount.toLocaleString()}</span>
+                <span class="card-detail-label">คน</span>
+            </div>
+            `;
+            
+            dashboardElement.appendChild(card);
+        }
+        
+        // Create dashboard summary cards for specific columns
+        function createDashboardSummary(data) {
+            if (data.length === 0) return;
+            
+            // Clear dashboard
+            dashboardElement.innerHTML = '';
+            
+            // Create card for จำนวนหัวหน้าจากคอลัมน์สถานะกองงาน
+            createLeadersCard(data);
+            
+            // Create card for จำนวนช่าง(คน)
+            createTechsCard(data);
+            
+            // Create card for ช่างติดตั้ง
+            createInstallTechsCard(data);
+            
+            // Create card for ช่างซ่อม
+            createRepairTechsCard(data);
+        }
+        
+        // ฟังก์ชัน debounce สำหรับการค้นหา
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                const context = this;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(context, args), wait);
+            };
+        }
+        
+        // Search function with debounce
+        const debouncedSearch = debounce(function() {
+            searchData();
+        }, 300); // รอ 300ms หลังจากหยุดพิมพ์
+        
+        // Search function
+        function searchData() {
+            searchTerm = searchInputElement.value.toLowerCase().trim();
+            
+            if (searchTerm === '') {
+                displayData = [...allData];
+            } else {
+                displayData = allData.filter(row => {
+                    // Search in all columns
+                    return Object.values(row).some(value => 
+                        value && value.toString().toLowerCase().includes(searchTerm)
+                    );
+                });
+            }
+            
+            // อัปเดตการ์ดข้อมูลสรุปใหม่หลังการค้นหา
+            createDashboardSummary(displayData);
+            
+            // Apply current sorting if any
+            if (currentSortColumn) {
+                sortTable(currentSortColumn);
+                return; // sortTable will reset page and render
+            }
+            
+            currentPage = 1; // Reset to first page
+            renderTable();
+        }
+        
+        // Pagination functions
+        function getPaginatedData() {
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            return displayData.slice(startIndex, startIndex + rowsPerPage);
+        }
+        
+        function getTotalPages() {
+            return Math.ceil(displayData.length / rowsPerPage);
+        }
+        
+        function renderPagination() {
+            const totalPages = getTotalPages();
+            
+            // Clear pagination
+            paginationElement.innerHTML = '';
+            
+            // Previous button
+            const prevButton = document.createElement('button');
+            prevButton.innerHTML = '&laquo;';
+            prevButton.disabled = currentPage === 1;
+            prevButton.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderTable();
+                }
+            });
+            paginationElement.appendChild(prevButton);
+            
+            // Page buttons
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+            
+            // Adjust start page if we're near the end
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+            
+            // First page button if not visible
+            if (startPage > 1) {
+                const firstButton = document.createElement('button');
+                firstButton.textContent = '1';
+                firstButton.addEventListener('click', () => {
+                    currentPage = 1;
+                    renderTable();
+                });
+                paginationElement.appendChild(firstButton);
+                
+                if (startPage > 2) {
+                    const ellipsis = document.createElement('span');
+                    ellipsis.textContent = '...';
+                    ellipsis.style.padding = '0 8px';
+                    paginationElement.appendChild(ellipsis);
+                }
+            }
+            
+            // Page buttons
+            for (let i = startPage; i <= endPage; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i;
+                pageButton.className = currentPage === i ? 'active' : '';
+                pageButton.addEventListener('click', () => {
+                    currentPage = i;
+                    renderTable();
+                });
+                paginationElement.appendChild(pageButton);
+            }
+            
+            // Last page button if not visible
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const ellipsis = document.createElement('span');
+                    ellipsis.textContent = '...';
+                    ellipsis.style.padding = '0 8px';
+                    paginationElement.appendChild(ellipsis);
+                }
+                
+                const lastButton = document.createElement('button');
+                lastButton.textContent = totalPages;
+                lastButton.addEventListener('click', () => {
+                    currentPage = totalPages;
+                    renderTable();
+                });
+                paginationElement.appendChild(lastButton);
+            }
+            
+            // Next button
+            const nextButton = document.createElement('button');
+            nextButton.innerHTML = '&raquo;';
+            nextButton.disabled = currentPage === totalPages || totalPages === 0;
+            nextButton.addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderTable();
+                }
+            });
+            paginationElement.appendChild(nextButton);
+        }
+        
+        // Create and render data table with pagination (ปรับปรุงประสิทธิภาพ)
+        function renderTable() {
+            const paginatedData = getPaginatedData();
+            
+            if (paginatedData.length === 0) {
+                dataTableElement.innerHTML = '<tr><td colspan="100%" style="text-align: center;">ไม่พบข้อมูล</td></tr>';
+                paginationElement.innerHTML = '';
+                return;
+            }
+            
+            // Get the column names
+            const columns = Object.keys(paginatedData[0]);
+            
+            // Function to format column header with line breaks
+            function formatColumnHeader(column) {
+                // ไม่ต้องแปลงชื่อคอลัมน์ แค่ตัดคำตามความเหมาะสม
+                
+                // เพิ่มการตัดบรรทัดตามเครื่องหมายพิเศษหรือตำแหน่งที่เหมาะสม
+                if (column.includes(' of ')) {
+                    return column.replace(' of ', '<br>of<br>');
+                } else if (column.includes('_')) {
+                    return column.replace('_', '<br>');
+                } else if (column.includes(' ')) {
+                    return column.replace(' ', '<br>');
+                } else if (column.length > 8) {
+                    // ถ้าคำยาวเกินไป ให้ตัดคำครึ่งกลาง
+                    const middle = Math.floor(column.length / 2);
+                    return column.substring(0, middle) + '<br>' + column.substring(middle);
+                }
+                return column;
+            }
+            
+            // Define column sizes based on the column name
+            const columnSizes = {
+                'Area': 'col-sm',
+                'Provider': 'col-md',
+                'CTM': 'col-sm',
+                'RSM': 'col-md',
+                'Type of Provider Group': 'col-lg',
+                'Type of work': 'col-md',
+                'ประเภทการรับงาน': 'col-md',
+                'Group': 'col-sm',
+                'Province': 'col-sm',
+                'Depot_Name': 'col-md',
+                'Depot_Code': 'col-sm',
+                'จำนวนกองงาน': 'col-sm',
+                'จำนวนช่าง': 'col-sm',
+                'Tech_Name': 'col-md',
+                'Tech_Surename': 'col-md',
+                'Tech_ID': 'col-sm',
+                'Register_Date': 'col-sm',
+                'Expire_Date': 'col-sm',
+                'บัตรหมดอายุ(วัน)': 'col-sm',
+                'Status': 'col-sm'
+            };
+            
+            // สร้าง table header และ body แยกกันเพื่อลดการ reflow
+            let tableHeader = '<thead><tr>';
+            let tableBody = '<tbody>';
+            
+            // Create table header
+            columns.forEach(column => {
+                const colSize = columnSizes[column] || 'col-md';
+                const sortingClass = column === currentSortColumn 
+                    ? `sorting-${currentSortDirection}` 
+                    : 'sorting';
+                tableHeader += `<th class="${colSize} ${sortingClass}" data-column="${column}">${formatColumnHeader(column)}</th>`;
+            });
+            tableHeader += '</tr></thead>';
+            
+            // Create table rows - ใช้ DocumentFragment เพื่อประสิทธิภาพที่ดีขึ้น
+            const fragment = document.createDocumentFragment();
+            const tempTable = document.createElement('table');
+            
+            // Create table rows
+            paginatedData.forEach(row => {
+                let rowHtml = '<tr>';
+                columns.forEach(column => {
+                    const cellValue = row[column] || '';
+                    // Add data attribute to store full text for tooltip
+                    rowHtml += `<td class="truncate" data-full-text="${cellValue}">${cellValue}</td>`;
+                });
+                rowHtml += '</tr>';
+                tableBody += rowHtml;
+            });
+            
+            tableBody += '</tbody>';
+            
+            // อัพเดท DOM เพียงครั้งเดียว
+            dataTableElement.innerHTML = tableHeader + tableBody;
+            
+            // Add sorting event listeners
+            document.querySelectorAll('#data-table th').forEach(headerCell => {
+                headerCell.addEventListener('click', () => {
+                    const column = headerCell.getAttribute('data-column');
+                    sortTable(column);
+                });
+            });
+            
+            // Render pagination
+            renderPagination();
+        }
+        
+        // Download Excel function
+        function downloadExcel() {
+            if (displayData.length === 0) {
+                alert('ไม่มีข้อมูลที่จะดาวน์โหลด');
+                return;
+            }
+            
+            // Convert data to worksheet
+            const worksheet = XLSX.utils.json_to_sheet(displayData);
+            
+            // Create workbook and add the worksheet
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Data");
+            
+            // Generate Excel file and trigger download
+            const today = new Date();
+            const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+            XLSX.writeFile(workbook, `data_export_${dateStr}.xlsx`);
+        }
+        
+        // Show error message
+        function showError(message) {
+            loadingElement.style.display = 'none';
+            errorMessageElement.textContent = message;
+            errorMessageElement.style.display = 'block';
+        }
+        
+        // Event listeners
+        searchButtonElement.addEventListener('click', debouncedSearch);
+        
+        searchInputElement.addEventListener('keyup', function(event) {
+            if (event.key === 'Enter') {
+                debouncedSearch();
+            } else {
+                // ค้นหาอัตโนมัติขณะพิมพ์
+                debouncedSearch();
+            }
+        });
+        
+        rowsSelectElement.addEventListener('change', function() {
+            rowsPerPage = parseInt(this.value);
+            currentPage = 1; // Reset to first page
+            renderTable();
+        });
+        
+        downloadExcelElement.addEventListener('click', downloadExcel);
+        
+        // Add refresh button event listener
+        document.getElementById('refresh-button').addEventListener('click', function() {
+            // แสดง loading ระหว่างรีเฟรช
+            loadingElement.style.display = 'block';
+            tableContainerElement.style.display = 'none';
+            dashboardElement.style.display = 'none';
+            
+            // รีเซ็ตแคชและดึงข้อมูลใหม่
+            csvCache = null;
+            lastFetchTime = 0;
+            
+            // ดึงข้อมูลใหม่
+            setTimeout(() => {
+                fetchDataAndVisualize();
+            }, 100); // เพิ่มการหน่วงเวลาเล็กน้อยเพื่อให้ UI อัพเดทก่อน
+        });
+        
+        // Sort function
+        function sortTable(column) {
+            // Toggle sort direction if clicking the same column
+            if (column === currentSortColumn) {
+                currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortColumn = column;
+                currentSortDirection = 'asc';
+            }
+            
+            // Sort the data
+            displayData.sort((a, b) => {
+                const valueA = a[column] || '';
+                const valueB = b[column] || '';
+                
+                // Check if values are numbers
+                const numA = parseFloat(valueA);
+                const numB = parseFloat(valueB);
+                
+                if (!isNaN(numA) && !isNaN(numB)) {
+                    // Numeric sorting
+                    return currentSortDirection === 'asc' ? numA - numB : numB - numA;
+                } else {
+                    // String sorting
+                    const stringA = valueA.toString().toLowerCase();
+                    const stringB = valueB.toString().toLowerCase();
+                    
+                    if (stringA < stringB) {
+                        return currentSortDirection === 'asc' ? -1 : 1;
+                    }
+                    if (stringA > stringB) {
+                        return currentSortDirection === 'asc' ? 1 : -1;
+                    }
+                    return 0;
+                }
+            });
+            
+            // Reset to first page and re-render
+            currentPage = 1;
+            renderTable();
+        }
+        
+        // เพิ่มฟังก์ชันสำหรับ filter ข้อมูลแบบมีส่วนร่วม
+        function createFilterOptions() {
+            // ตรวจสอบและลบ filter container เดิมถ้ามี
+            const existingFilters = document.querySelectorAll('.filter-container');
+            existingFilters.forEach(filter => filter.remove());
+            
+            // สร้างตัวกรองตามคอลัมน์ที่เลือก
+            const filterContainer = document.createElement('div');
+            filterContainer.className = 'filter-container';
+            filterContainer.style.display = 'flex';
+            filterContainer.style.flexWrap = 'wrap';
+            filterContainer.style.gap = '10px';
+            
+            // สร้างตัวเลือกคอลัมน์สำหรับ filter
+            const columns = Object.keys(allData[0] || {});
+            // กำหนดลำดับของตัวกรองใหม่ โดยลบ "สถานะ", "Group", "Type of work" และ "ประเภทการรับงาน" ออก และเพิ่ม "RSM" ไว้หน้า "Province"
+            const importantColumns = ['Provider', 'Type of Provider Group', 'RSM', 'Province'];
+            
+            importantColumns.forEach(column => {
+                if (!columns.includes(column)) return;
+                
+                // สร้างค่าที่เป็นไปได้ทั้งหมดของคอลัมน์
+                const uniqueValues = [...new Set(allData.map(item => item[column]).filter(Boolean))];
+                if (uniqueValues.length <= 1) return; // ข้ามถ้ามีค่าเดียวหรือไม่มีค่า
+                
+                // สร้าง multiselect dropdown
+                const filterGroup = document.createElement('div');
+                filterGroup.style.display = 'flex';
+                filterGroup.style.flexDirection = 'column';
+                
+                const label = document.createElement('div');
+                label.textContent = formatColumnHeaderText(column) + ':';
+                label.className = 'filter-label';
+                
+                // สร้าง multiselect dropdown
+                const multiselect = document.createElement('div');
+                multiselect.className = 'multiselect-dropdown';
+                multiselect.setAttribute('data-column', column);
+                
+                // สร้าง header ของ multiselect
+                const header = document.createElement('div');
+                header.className = 'multiselect-dropdown-header';
+                
+                const headerText = document.createElement('div');
+                headerText.className = 'multiselect-dropdown-header-text';
+                headerText.textContent = 'ทั้งหมด';
+                
+                header.appendChild(headerText);
+                
+                // สร้าง content ของ multiselect
+                const content = document.createElement('div');
+                content.className = 'multiselect-dropdown-content';
+                
+                // เพิ่มตัวเลือก "เลือกทั้งหมด"
+                const selectAllDiv = document.createElement('div');
+                selectAllDiv.className = 'multiselect-select-all';
+                
+                const selectAllCheckbox = document.createElement('input');
+                selectAllCheckbox.type = 'checkbox';
+                selectAllCheckbox.checked = true;
+                selectAllCheckbox.addEventListener('change', function() {
+                    const options = content.querySelectorAll('.multiselect-option input');
+                    options.forEach(option => {
+                        option.checked = this.checked;
+                    });
+                    updateMultiselectHeader(multiselect, uniqueValues);
+                    applyFilters();
+                });
+                
+                const selectAllLabel = document.createTextNode('เลือกทั้งหมด');
+                
+                selectAllDiv.appendChild(selectAllCheckbox);
+                selectAllDiv.appendChild(selectAllLabel);
+                content.appendChild(selectAllDiv);
+                
+                // เพิ่มตัวเลือกทั้งหมด
+                uniqueValues.sort().forEach(value => {
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = 'multiselect-option';
+                    
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.value = value;
+                    checkbox.checked = true;
+                    checkbox.addEventListener('change', function() {
+                        // ตรวจสอบว่าทุกช่องถูกติ๊กหรือไม่
+                        const allOptions = content.querySelectorAll('.multiselect-option input');
+                        const allChecked = Array.from(allOptions).every(opt => opt.checked);
+                        
+                        // อัปเดตสถานะของเลือกทั้งหมด
+                        const selectAllCheckbox = content.querySelector('.multiselect-select-all input');
+                        selectAllCheckbox.checked = allChecked;
+                        
+                        updateMultiselectHeader(multiselect, uniqueValues);
+                        applyFilters();
+                    });
+                    
+                    const optionLabel = document.createTextNode(value);
+                    
+                    optionDiv.appendChild(checkbox);
+                    optionDiv.appendChild(optionLabel);
+                    content.appendChild(optionDiv);
+                });
+                
+                // เพิ่ม event listener สำหรับการเปิด/ปิด dropdown
+                header.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    this.classList.toggle('active');
+                    content.classList.toggle('show');
+                    
+                    // ปิด dropdown อื่นๆ ที่อาจเปิดอยู่
+                    document.querySelectorAll('.multiselect-dropdown-content.show').forEach(dropdown => {
+                        if (dropdown !== content) {
+                            dropdown.classList.remove('show');
+                            dropdown.previousElementSibling.classList.remove('active');
+                        }
+                    });
+                });
+                
+                // ปิด dropdown เมื่อคลิกที่อื่น
+                document.addEventListener('click', function() {
+                    content.classList.remove('show');
+                    header.classList.remove('active');
+                });
+                
+                // ป้องกันการปิด dropdown เมื่อคลิกภายใน dropdown
+                content.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+                
+                multiselect.appendChild(header);
+                multiselect.appendChild(content);
+                
+                filterGroup.appendChild(label);
+                filterGroup.appendChild(multiselect);
+                filterContainer.appendChild(filterGroup);
+            });
+            
+            // เพิ่มเข้าไปในหน้าเว็บ
+            if (filterContainer.children.length > 0) {
+                const tableControls = document.querySelector('.table-controls');
+                tableControls.parentNode.insertBefore(filterContainer, tableControls.nextSibling);
+            }
+        }
+        
+        // ฟังก์ชันอัปเดตข้อความของ multiselect header
+        function updateMultiselectHeader(multiselect, allValues) {
+            const header = multiselect.querySelector('.multiselect-dropdown-header-text');
+            const checkboxes = multiselect.querySelectorAll('.multiselect-option input');
+            const checkedBoxes = Array.from(checkboxes).filter(cb => cb.checked);
+            
+            if (checkedBoxes.length === 0) {
+                header.textContent = 'ไม่มีที่เลือก';
+            } else if (checkedBoxes.length === checkboxes.length) {
+                header.textContent = 'ทั้งหมด';
+            } else if (checkedBoxes.length <= 2) {
+                header.textContent = checkedBoxes.map(cb => cb.value).join(', ');
+            } else {
+                header.textContent = `เลือก ${checkedBoxes.length} รายการ`;
+            }
+        }
+        
+        // แปลงชื่อคอลัมน์เป็นข้อความสำหรับ label
+        function formatColumnHeaderText(column) {
+            // คืนค่าชื่อคอลัมน์เดิมโดยไม่มีการแปลง
+            return column;
+        }
+        
+        // ประมวลผล filter ทั้งหมด
+        function applyFilters() {
+            const filters = {};
+            
+            // รวบรวมค่า filter ทั้งหมด
+            document.querySelectorAll('.multiselect-dropdown').forEach(multiselect => {
+                const column = multiselect.getAttribute('data-column');
+                const selectedValues = Array.from(
+                    multiselect.querySelectorAll('.multiselect-option input:checked')
+                ).map(cb => cb.value);
+                
+                // ถ้าไม่มีค่าที่เลือก หรือ เลือกทั้งหมด ไม่ต้องกรอง
+                const allOptions = multiselect.querySelectorAll('.multiselect-option input');
+                if (selectedValues.length > 0 && selectedValues.length < allOptions.length) {
+                    filters[column] = selectedValues;
+                }
+            });
+            
+            // กรองข้อมูล
+            if (Object.keys(filters).length === 0) {
+                // ไม่มี filter ที่ใช้งาน
+                displayData = searchTerm ? 
+                    allData.filter(row => Object.values(row).some(val => 
+                        val && val.toString().toLowerCase().includes(searchTerm.toLowerCase())
+                    )) : 
+                    [...allData];
+            } else {
+                // มี filter ที่ใช้งาน
+                displayData = allData.filter(row => {
+                    // ตรวจสอบว่าข้อมูลตรงกับทุก filter หรือไม่
+                    return Object.keys(filters).every(column => {
+                        // ตรวจสอบว่าค่าในแถวอยู่ในรายการที่เลือกหรือไม่
+                        return filters[column].includes(row[column]);
+                    });
+                });
+                
+                // ถ้ามีการค้นหา ให้กรองอีกครั้ง
+                if (searchTerm) {
+                    displayData = displayData.filter(row => 
+                        Object.values(row).some(val => 
+                            val && val.toString().toLowerCase().includes(searchTerm.toLowerCase())
+                        )
+                    );
+                }
+            }
+            
+            // อัปเดตการ์ดข้อมูลสรุปใหม่หลังการกรอง
+            createDashboardSummary(displayData);
+            
+            // รีเซ็ตหน้าและแสดงผลใหม่
+            currentPage = 1;
+            renderTable();
+        }
+        
+        // Initialize
+        window.addEventListener('DOMContentLoaded', fetchDataAndVisualize);
+    </script>
+</body>
+</html>
