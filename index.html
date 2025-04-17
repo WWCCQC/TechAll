@@ -733,6 +733,13 @@
                     const columnsToKeep = [0, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 16, 17, 18, 19, 22, 24, 25, 27, 31];
                     const filteredData = filterColumns(data, columnsToKeep);
                     
+                    // กรอง "MPLS" และ "Other" ออกจากคอลัมน์ "Type of work"
+                    filteredData.forEach(row => {
+                        if (row['Type of work'] === 'MPLS' || row['Type of work'] === 'Other') {
+                            row['Type of work'] = '';
+                        }
+                    });
+                    
                     allData = filteredData;
                     displayData = [...allData];
                     
@@ -779,11 +786,29 @@
             
             // Create new data array with only the selected columns AND filtered rows
             return data
-                .filter(row => (row[columnBName] === "WW-Provider" || row[columnBName] === "เถ้าแก่เทค") && row[columnIName] !== "TVG")
+                .filter(row => {
+                    // กรองเงื่อนไขเดิม: (row[columnBName] === "WW-Provider" || row[columnBName] === "เถ้าแก่เทค") และ row[columnIName] !== "TVG"
+                    const basicCondition = (row[columnBName] === "WW-Provider" || row[columnBName] === "เถ้าแก่เทค") && row[columnIName] !== "TVG";
+                    
+                    // เพิ่มเงื่อนไขสำหรับกรอง Type of work 
+                    // ตรวจสอบว่ามีคอลัมน์ที่เป็น Type of work หรือไม่
+                    const columnTypeOfWork = selectedColumns.find(col => col === 'Type of work');
+                    
+                    // ถ้ามีคอลัมน์ Type of work ให้กรองแถวที่มีค่า MPLS หรือ Other ออก
+                    if (columnTypeOfWork && (row[columnTypeOfWork] === 'MPLS' || row[columnTypeOfWork] === 'Other')) {
+                        return false; // ไม่นำแถวนี้มาใช้
+                    }
+                    
+                    return basicCondition; // ใช้เงื่อนไขเดิม
+                })
                 .map(row => {
                     const newRow = {};
                     selectedColumns.forEach(col => {
-                        newRow[col] = row[col];
+                        if (col === 'Type of work' && (row[col] === 'MPLS' || row[col] === 'Other')) {
+                            newRow[col] = ''; // กำหนดให้เป็นค่าว่าง
+                        } else {
+                            newRow[col] = row[col];
+                        }
                     });
                     return newRow;
                 });
@@ -1317,14 +1342,20 @@
             
             // สร้างตัวเลือกคอลัมน์สำหรับ filter
             const columns = Object.keys(allData[0] || {});
-            // กำหนดลำดับของตัวกรองใหม่ โดยลบ "สถานะ", "Group", "Type of work" และ "ประเภทการรับงาน" ออก และเพิ่ม "RSM" ไว้หน้า "Province"
+            // กำหนดลำดับของตัวกรองใหม่ โดยเพิ่ม "Type of work" และ "RSM" ไว้หน้า "Province"
             const importantColumns = ['Provider', 'Type of Provider Group', 'RSM', 'Province'];
             
             importantColumns.forEach(column => {
                 if (!columns.includes(column)) return;
                 
                 // สร้างค่าที่เป็นไปได้ทั้งหมดของคอลัมน์
-                const uniqueValues = [...new Set(allData.map(item => item[column]).filter(Boolean))];
+                let uniqueValues = [...new Set(allData.map(item => item[column]).filter(Boolean))];
+                
+                // กรองคำว่า "MPLS" และ "Other" ออกจาก "Type of work"
+                if (column === 'Type of work') {
+                    uniqueValues = uniqueValues.filter(value => value !== 'MPLS' && value !== 'Other');
+                }
+                
                 if (uniqueValues.length <= 1) return; // ข้ามถ้ามีค่าเดียวหรือไม่มีค่า
                 
                 // สร้าง multiselect dropdown
