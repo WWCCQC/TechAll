@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data Technician Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" media="print" onload="this.media='all'">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* Font preloads */
         @font-face {
@@ -79,11 +80,29 @@
             opacity: 0.8;
         }
         
+        .dashboard-wrapper {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        
+        .cards-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            align-items: flex-start;
+            margin: 0;
+        }
+        
         .dashboard {
             display: flex;
             gap: 15px;
             margin-bottom: 20px;
             justify-content: flex-end;
+            flex-wrap: wrap;
         }
         
         .card {
@@ -505,6 +524,18 @@
             margin-bottom: 15px;
             width: 100%;
         }
+        
+        .chart-container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: var(--box-shadow);
+            width: 500px;
+            min-width: 300px;
+            height: 300px;
+            margin: 20px 0;
+            flex-shrink: 0;
+        }
     </style>
 </head>
 <body>
@@ -532,8 +563,15 @@
             </style>
         </div>
         
-        <div id="dashboard" class="dashboard" style="display: none;">
-            <!-- Dashboard cards will be populated here -->
+        <!-- ปรับโครงสร้างใหม่ ให้การ์ดและกราฟอยู่แถวเดียวกัน -->
+        <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+            <div id="chart-container" class="chart-container" style="display: none; margin: 0; width: 500px; height: 300px;">
+                <canvas id="rsmChart"></canvas>
+            </div>
+            
+            <div id="dashboard" class="dashboard" style="display: none; margin: 0;">
+                <!-- Dashboard cards will be populated here -->
+            </div>
         </div>
         
         <div id="table-container" class="table-container" style="display: none;">
@@ -599,20 +637,7 @@
         let csvCache = null; // สำหรับเก็บข้อมูล CSV ในหน่วยความจำ
         let lastFetchTime = 0; // เวลาที่ดึงข้อมูลครั้งล่าสุด
         const CACHE_DURATION = 5 * 60 * 1000; // 5 นาที (เป็นมิลลิวินาที)
-        
-        // แสดง loading animation ที่ดีขึ้น
-        loadingElement.innerHTML = `
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                <div style="border: 5px solid #f3f3f3; border-top: 5px solid #3498db; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite;"></div>
-                <p style="margin-top: 15px;">กำลังโหลดข้อมูล...</p>
-            </div>
-            <style>
-                @keyframes spin {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
-                }
-            </style>
-        `;
+        let rsmChart = null; // สำหรับเก็บอ็อบเจ็กต์ Chart
         
         // Thai date formatter
         function formatThaiDate() {
@@ -701,32 +726,24 @@
         
         // ปรับปรุงฟังก์ชัน processData ให้ใช้ lazy loading
         function processData(csvText) {
-            // Parse CSV data
             Papa.parse(csvText, {
                 header: true,
                 complete: function(results) {
                     const data = results.data;
-                    
-                    // Filter columns from data
                     const columnsToKeep = [0, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 16, 17, 18, 19, 22, 24, 25, 27, 31];
-                    
-                    // Filter data to only include specified columns
                     const filteredData = filterColumns(data, columnsToKeep);
                     
-                    // Store the filtered data
                     allData = filteredData;
-                    displayData = [...allData]; // Initially, display all filtered data
+                    displayData = [...allData];
                     
-                    // Hide loading and show content
                     loadingElement.style.display = 'none';
-                    dashboardElement.style.display = 'flex';
+                    document.getElementById('dashboard').style.display = 'flex';
+                    document.getElementById('chart-container').style.display = 'block';
                     tableContainerElement.style.display = 'block';
                     
-                    // Process and display data
                     createDashboardSummary(filteredData);
-                    createFilterOptions(); // สร้าง filter options
-                    
-                    // ใช้ lazy loading แทนการโหลดตารางทันที
+                    createRSMChart(filteredData);
+                    createFilterOptions();
                     setupLazyLoading();
                 },
                 error: function(error) {
@@ -1230,7 +1247,8 @@
             // แสดง loading ระหว่างรีเฟรช
             loadingElement.style.display = 'block';
             tableContainerElement.style.display = 'none';
-            dashboardElement.style.display = 'none';
+            document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('chart-container').style.display = 'none';
             
             // รีเซ็ตแคชและดึงข้อมูลใหม่
             csvCache = null;
@@ -1463,32 +1481,25 @@
                     multiselect.querySelectorAll('.multiselect-option input:checked')
                 ).map(cb => cb.value);
                 
-                // ถ้าไม่มีค่าที่เลือก หรือ เลือกทั้งหมด ไม่ต้องกรอง
-                const allOptions = multiselect.querySelectorAll('.multiselect-option input');
-                if (selectedValues.length > 0 && selectedValues.length < allOptions.length) {
+                if (selectedValues.length > 0 && selectedValues.length < multiselect.querySelectorAll('.multiselect-option input').length) {
                     filters[column] = selectedValues;
                 }
             });
             
             // กรองข้อมูล
             if (Object.keys(filters).length === 0) {
-                // ไม่มี filter ที่ใช้งาน
                 displayData = searchTerm ? 
                     allData.filter(row => Object.values(row).some(val => 
                         val && val.toString().toLowerCase().includes(searchTerm.toLowerCase())
                     )) : 
                     [...allData];
             } else {
-                // มี filter ที่ใช้งาน
                 displayData = allData.filter(row => {
-                    // ตรวจสอบว่าข้อมูลตรงกับทุก filter หรือไม่
                     return Object.keys(filters).every(column => {
-                        // ตรวจสอบว่าค่าในแถวอยู่ในรายการที่เลือกหรือไม่
                         return filters[column].includes(row[column]);
                     });
                 });
                 
-                // ถ้ามีการค้นหา ให้กรองอีกครั้ง
                 if (searchTerm) {
                     displayData = displayData.filter(row => 
                         Object.values(row).some(val => 
@@ -1498,12 +1509,125 @@
                 }
             }
             
-            // อัปเดตการ์ดข้อมูลสรุปใหม่หลังการกรอง
+            // อัปเดตการ์ดข้อมูลสรุปและกราฟ
             createDashboardSummary(displayData);
+            createRSMChart(displayData);
             
-            // รีเซ็ตหน้าและแสดงผลใหม่
             currentPage = 1;
             renderTable();
+        }
+        
+        // เพิ่มฟังก์ชันสำหรับสร้างและอัปเดตกราฟ RSM
+        function createRSMChart(data) {
+            const rsmList = [
+                'RSM1_BMA-West',
+                'RSM2_BMA-East',
+                'RSM3_UPC-East',
+                'RSM4_UPC-NOR',
+                'RSM5_UPC-NOE1',
+                'RSM6_UPC-NOE2',
+                'RSM7_UPC-CEW',
+                'RSM8_UPC-SOU'
+            ];
+
+            // นับจำนวนหัวหน้าในแต่ละ RSM
+            const rsmCounts = rsmList.map(rsm => {
+                return data.filter(row => 
+                    row['RSM'] === rsm && 
+                    row['สถานะกองงาน'] && 
+                    row['สถานะกองงาน'].includes('หัวหน้า')
+                ).length;
+            });
+
+            // ถ้ามีกราฟอยู่แล้ว ให้ทำลายก่อนสร้างใหม่
+            if (rsmChart) {
+                rsmChart.destroy();
+            }
+
+            // สร้างกราฟใหม่
+            const ctx = document.getElementById('rsmChart').getContext('2d');
+            rsmChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: rsmList.map(rsm => rsm.split('_')[0]), // แสดงเฉพาะส่วนหน้า _
+                    datasets: [{
+                        label: 'จำนวนกองงาน',
+                        data: rsmCounts,
+                        backgroundColor: 'rgba(74, 111, 165, 0.8)',
+                        borderColor: 'rgba(74, 111, 165, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'จำนวนกองงานแยกตาม RSM',
+                            font: {
+                                size: 16
+                            },
+                            padding: {
+                                top: 10,
+                                bottom: 15
+                            }
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            formatter: function(value) {
+                                return value;
+                            },
+                            font: {
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    layout: {
+                        padding: {
+                            top: 20
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            enabled: true
+                        }
+                    }
+                },
+                plugins: [{
+                    afterDraw: function(chart) {
+                        var ctx = chart.ctx;
+                        chart.data.datasets.forEach(function(dataset, i) {
+                            var meta = chart.getDatasetMeta(i);
+                            meta.data.forEach(function(bar, index) {
+                                var data = dataset.data[index];
+                                ctx.fillStyle = '#000000';
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'bottom';
+                                ctx.font = '12px Arial';
+                                ctx.fillText(data, bar.x, bar.y - 5);
+                            });
+                        });
+                    }
+                }]
+            });
         }
         
         // Initialize
