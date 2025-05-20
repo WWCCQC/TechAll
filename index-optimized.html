@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Technician Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" media="print" onload="this.media='all'">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Data Technician Dashboard</h1>
+            <div id="thai-date" class="thai-date"></div>
+            <div class="dev-info">Dev.by Installation & Maintenance</div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div id="error-message" class="error" style="display: none;"></div>
+        
+        <div id="loading" class="loading">
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <div style="border: 5px solid #f3f3f3; border-top: 5px solid #3498db; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite;"></div>
+                <p style="margin-top: 15px;">กำลังโหลดข้อมูล...</p>
+            </div>
+        </div>
+        
+        <!-- ปรับโครงสร้างใหม่ ให้การ์ดและกราฟอยู่แถวเดียวกัน -->
+        <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+            <div id="chart-container" class="chart-container" style="display: none; margin: 0; width: 500px; height: 300px;">
+                <canvas id="rsmChart"></canvas>
+            </div>
+            
+            <div id="dashboard" class="dashboard" style="display: none; margin: 0;">
+                <!-- Dashboard cards will be populated here -->
+            </div>
+        </div>
+        
+        <div id="table-container" class="table-container" style="display: none;">
+            <div class="table-controls">
+                <div class="search-container">
+                    <input type="text" id="search-input" class="search-input" placeholder="ค้นหาข้อมูล...">
+                    <button id="search-button">ค้นหา</button>
+                    <button id="refresh-button">รีเฟรช</button>
+                </div>
+                <div class="rows-per-page">
+                    <label for="rows-select">แสดง:</label>
+                    <select id="rows-select">
+                        <option value="25" selected>25 แถว</option>
+                        <option value="50">50 แถว</option>
+                        <option value="100">100 แถว</option>
+                        <option value="500">500 แถว</option>
+                    </select>
+                    <button id="download-excel">ดาวน์โหลด Excel</button>
+                </div>
+            </div>
+            <table id="data-table">
+                <!-- Table will be populated here -->
+            </table>
+            <div id="pagination" class="pagination">
+                <!-- Pagination will be populated here -->
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Data Technician Dashboard</p>
+        </div>
+    </footer>
+    
+    <!-- แยก JavaScript ออกเป็นไฟล์ต่างๆ และโหลดแบบ defer -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
+    
+    <!-- JavaScript ที่แยกออกมา -->
+    <script src="app.js" defer></script>
+    <script src="data-processing.js" defer></script>
+    <script src="table-functions.js" defer></script>
+    <script src="dashboard.js" defer></script>
+    <script src="filters.js" defer></script>
+</body>
+</html> 
