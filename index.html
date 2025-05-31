@@ -257,8 +257,8 @@
             // Create new data array with only the selected columns AND filtered rows
             return data
                 .filter(row => {
-                    // กรองเงื่อนไขเดิม: (row[columnBName] === "WW-Provider" || row[columnBName] === "เถ้าแก่เทค") และ row[columnIName] !== "TVG"
-                    const basicCondition = (row[columnBName] === "WW-Provider" || row[columnBName] === "เถ้าแก่เทค") && row[columnIName] !== "TVG";
+                    // กรองเงื่อนไขเดิม: (row[columnBName] === "WW-Provider" || row[columnBName] === "เถ้าแก่เทค" || row[columnBName] === "True Tech") และ row[columnIName] !== "TVG"
+                    const basicCondition = (row[columnBName] === "WW-Provider" || row[columnBName] === "เถ้าแก่เทค" || row[columnBName] === "True Tech") && row[columnIName] !== "TVG";
                     
                     // เพิ่มเงื่อนไขสำหรับกรอง Type of work 
                     // ตรวจสอบว่ามีคอลัมน์ที่เป็น Type of work หรือไม่
@@ -266,6 +266,15 @@
                     
                     // ถ้ามีคอลัมน์ Type of work ให้กรองแถวที่มีค่า MPLS หรือ Other ออก
                     if (columnTypeOfWork && (row[columnTypeOfWork] === 'MPLS' || row[columnTypeOfWork] === 'Other')) {
+                        return false; // ไม่นำแถวนี้มาใช้
+                    }
+                    
+                    // เพิ่มเงื่อนไขสำหรับกรอง Type of Provider Group
+                    // ตรวจสอบว่ามีคอลัมน์ที่เป็น Type of Provider Group หรือไม่
+                    const columnTypeOfProviderGroup = selectedColumns.find(col => col === 'Type of Provider Group');
+                    
+                    // ถ้ามีคอลัมน์ Type of Provider Group ให้กรองแถวที่มีค่า Audit(QC) ออก
+                    if (columnTypeOfProviderGroup && row[columnTypeOfProviderGroup] === 'Audit(QC)') {
                         return false; // ไม่นำแถวนี้มาใช้
                     }
                     
