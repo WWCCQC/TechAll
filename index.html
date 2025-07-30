@@ -83,6 +83,12 @@
         // CSV URL
         const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSYKfT03Rf95K3lXJf1n20H2aLietUGI0wjFdC21AusbFEVcsT61-BR4v_s3Na9YLcpCIxyWuyOW-uF/pub?gid=813367910&single=true&output=csv";
         
+        // CORS Proxy URL as fallback
+        const corsProxyUrl = "https://api.allorigins.win/raw?url=";
+        
+        // Flag to track if we should use CORS proxy
+        let useCorsProxy = false;
+        
         // Elements
         const loadingElement = document.getElementById('loading');
         const tableContainerElement = document.getElementById('table-container');
@@ -150,9 +156,58 @@
                     return;
                 }
                 
+                // Show loading message
+                console.log('Fetching data from:', csvUrl);
+                
+                // Try direct access first, then CORS proxy as fallback
+                let finalUrl = useCorsProxy ? corsProxyUrl + encodeURIComponent(csvUrl) : csvUrl;
+                console.log('Attempting to fetch from:', finalUrl);
+                
                 // Fetch CSV data
-                const response = await fetch(csvUrl);
+                const response = await fetch(finalUrl);
+                
+                // Check if response is ok
+                if (!response.ok) {
+                    if (!useCorsProxy) {
+                        // Try with CORS proxy if direct access failed
+                        console.log('Direct access failed, trying with CORS proxy...');
+                        useCorsProxy = true;
+                        finalUrl = corsProxyUrl + encodeURIComponent(csvUrl);
+                        const proxyResponse = await fetch(finalUrl);
+                        
+                        if (!proxyResponse.ok) {
+                            throw new Error(`HTTP error! status: ${proxyResponse.status} - ${proxyResponse.statusText}`);
+                        }
+                        
+                        const csvText = await proxyResponse.text();
+                        
+                        // Check if csvText is not empty
+                        if (!csvText || csvText.length === 0) {
+                            throw new Error('CSV data is empty');
+                        }
+                        
+                        console.log('CSV data fetched successfully via CORS proxy, length:', csvText.length);
+                        
+                        // บันทึกลงแคช
+                        csvCache = csvText;
+                        lastFetchTime = now;
+                        
+                        // ประมวลผลข้อมูล
+                        processData(csvText);
+                        return;
+                    } else {
+                        throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
+                    }
+                }
+                
                 const csvText = await response.text();
+                
+                // Check if csvText is not empty
+                if (!csvText || csvText.length === 0) {
+                    throw new Error('CSV data is empty');
+                }
+                
+                console.log('CSV data fetched successfully, length:', csvText.length);
                 
                 // บันทึกลงแคช
                 csvCache = csvText;
@@ -161,7 +216,49 @@
                 // ประมวลผลข้อมูล
                 processData(csvText);
             } catch (error) {
-                showError("Error fetching data: " + error.message);
+                console.error('Error details:', error);
+                
+                // If it's a CORS/network error and we haven't tried the proxy yet, try it now
+                if (!useCorsProxy && (error.name === 'TypeError' || error.message.includes('CORS') || error.message.includes('fetch'))) {
+                    console.log('Network/CORS error detected, retrying with CORS proxy...');
+                    try {
+                        useCorsProxy = true;
+                        const finalUrl = corsProxyUrl + encodeURIComponent(csvUrl);
+                        console.log('Fetching via CORS proxy:', finalUrl);
+                        
+                        const proxyResponse = await fetch(finalUrl);
+                        
+                        if (!proxyResponse.ok) {
+                            throw new Error(`CORS Proxy HTTP error! status: ${proxyResponse.status}`);
+                        }
+                        
+                        const csvText = await proxyResponse.text();
+                        
+                        if (!csvText || csvText.length === 0) {
+                            throw new Error('CSV data is empty from CORS proxy');
+                        }
+                        
+                        console.log('CSV data fetched successfully via CORS proxy, length:', csvText.length);
+                        
+                        csvCache = csvText;
+                        lastFetchTime = now;
+                        
+                        processData(csvText);
+                        return;
+                        
+                    } catch (proxyError) {
+                        console.error('CORS proxy also failed:', proxyError);
+                        showError(`ไม่สามารถโหลดข้อมูลได้ทั้งแบบตรงและผ่าน proxy: ${proxyError.message}`);
+                        return;
+                    }
+                }
+                
+                showError(`เกิดข้อผิดพลาดในการโหลดข้อมูล: ${error.message}`);
+                
+                // Show additional debugging info
+                if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    showError(`ปัญหาการเชื่อมต่อ: ไม่สามารถเข้าถึง Google Sheets ได้ (อาจเป็นปัญหา CORS)`);
+                }
             }
         }
         
@@ -203,9 +300,9 @@
                     const columnsToKeep = [0, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 16, 17, 18, 19, 22, 24, 25, 27, 31];
                     const filteredData = filterColumns(data, columnsToKeep);
                     
-                    // กรอง "MPLS" และ "Other" ออกจากคอลัมน์ "Type of work"
+                    // กรอง "MPLS", "Other", "Audit(QC)", "Solar" ออกจากคอลัมน์ "Type of work"
                     filteredData.forEach(row => {
-                        if (row['Type of work'] === 'MPLS' || row['Type of work'] === 'Other') {
+                        if (row['Type of work'] === 'MPLS' || row['Type of work'] === 'Other' || row['Type of work'] === 'Audit(QC)' || row['Type of work'] === 'Solar') {
                             row['Type of work'] = '';
                         }
                     });
@@ -264,8 +361,8 @@
                     // ตรวจสอบว่ามีคอลัมน์ที่เป็น Type of work หรือไม่
                     const columnTypeOfWork = selectedColumns.find(col => col === 'Type of work');
                     
-                    // ถ้ามีคอลัมน์ Type of work ให้กรองแถวที่มีค่า MPLS หรือ Other ออก
-                    if (columnTypeOfWork && (row[columnTypeOfWork] === 'MPLS' || row[columnTypeOfWork] === 'Other')) {
+                    // ถ้ามีคอลัมน์ Type of work ให้กรองแถวที่มีค่า MPLS, Other, Audit(QC), Solar ออก
+                    if (columnTypeOfWork && (row[columnTypeOfWork] === 'MPLS' || row[columnTypeOfWork] === 'Other' || row[columnTypeOfWork] === 'Audit(QC)' || row[columnTypeOfWork] === 'Solar')) {
                         return false; // ไม่นำแถวนี้มาใช้
                     }
                     
@@ -273,8 +370,8 @@
                     // ตรวจสอบว่ามีคอลัมน์ที่เป็น Type of Provider Group หรือไม่
                     const columnTypeOfProviderGroup = selectedColumns.find(col => col === 'Type of Provider Group');
                     
-                    // ถ้ามีคอลัมน์ Type of Provider Group ให้กรองแถวที่มีค่า Audit(QC) ออก
-                    if (columnTypeOfProviderGroup && row[columnTypeOfProviderGroup] === 'Audit(QC)') {
+                    // ถ้ามีคอลัมน์ Type of Provider Group ให้กรองแถวที่มีค่า Audit(QC), Other, Solar ออก
+                    if (columnTypeOfProviderGroup && (row[columnTypeOfProviderGroup] === 'Audit(QC)' || row[columnTypeOfProviderGroup] === 'Other' || row[columnTypeOfProviderGroup] === 'Solar')) {
                         return false; // ไม่นำแถวนี้มาใช้
                     }
                     
@@ -283,7 +380,7 @@
                 .map(row => {
                     const newRow = {};
                     selectedColumns.forEach(col => {
-                        if (col === 'Type of work' && (row[col] === 'MPLS' || row[col] === 'Other')) {
+                        if (col === 'Type of work' && (row[col] === 'MPLS' || row[col] === 'Other' || row[col] === 'Audit(QC)' || row[col] === 'Solar')) {
                             newRow[col] = ''; // กำหนดให้เป็นค่าว่าง
                         } else {
                             newRow[col] = row[col];
@@ -830,9 +927,9 @@
                 // สร้างค่าที่เป็นไปได้ทั้งหมดของคอลัมน์
                 let uniqueValues = [...new Set(allData.map(item => item[column]).filter(Boolean))];
                 
-                // กรองคำว่า "MPLS" และ "Other" ออกจาก "Type of work"
+                // กรองคำว่า "MPLS", "Other", "Audit(QC)", "Solar" ออกจาก "Type of work"
                 if (column === 'Type of work') {
-                    uniqueValues = uniqueValues.filter(value => value !== 'MPLS' && value !== 'Other');
+                    uniqueValues = uniqueValues.filter(value => value !== 'MPLS' && value !== 'Other' && value !== 'Audit(QC)' && value !== 'Solar');
                 }
                 
                 if (uniqueValues.length <= 1) return; // ข้ามถ้ามีค่าเดียวหรือไม่มีค่า
