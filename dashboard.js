@@ -53,10 +53,14 @@ function createTechsCard(data) {
 
 // นับจำนวนช่างติดตั้ง
 function countInstallTechsInData(data) {
-    // นับจำนวนข้อมูลที่มีคำว่า "Install" หรือ "Install-Repair" ในคอลัมน์ Type of Provider Group
+    // นับจำนวนข้อมูลที่มีคำว่า "Installation" ในคอลัมน์ Type of work และมีคำว่า "หัวหน้า" หรือ "ลูกน้อง" ในคอลัมน์สถานะกองงาน
     const installCount = data.filter(row => {
-        const value = row['Type of Provider Group'];
-        return value && (value.toString().includes('Install') || value.toString().includes('Install-Repair'));
+        const workValue = row['Type of work'];
+        const statusValue = row['สถานะกองงาน'];
+        return workValue && 
+               workValue.toString().includes('Installation') && 
+               statusValue && 
+               (statusValue.toString().includes('หัวหน้า') || statusValue.toString().includes('ลูกน้อง'));
     }).length;
     
     return installCount;
@@ -68,10 +72,10 @@ function createInstallTechsCard(data) {
     
     // นับจำนวนกองงานช่างติดตั้ง (นับเฉพาะที่มีคำว่า "หัวหน้า" ในคอลัมน์ "สถานะกองงาน")
     const installGroupCount = data.filter(row => {
-        const typeValue = row['Type of Provider Group'];
+        const typeValue = row['Type of work'];
         const statusValue = row['สถานะกองงาน'];
         return typeValue && 
-              (typeValue.toString().includes('Install') || typeValue.toString().includes('Install-Repair')) && 
+              typeValue.toString().includes('Installation') && 
               statusValue && 
               statusValue.toString().includes('หัวหน้า');
     }).length;
@@ -97,10 +101,14 @@ function createInstallTechsCard(data) {
 
 // นับจำนวนช่างซ่อม
 function countRepairTechsInData(data) {
-    // นับจำนวนข้อมูลที่มีคำว่า "Repair" ในคอลัมน์ Type of Provider Group
+    // นับจำนวนข้อมูลที่มีคำว่า "Repair" ในคอลัมน์ Type of work และมีคำว่า "หัวหน้า" หรือ "ลูกน้อง" ในคอลัมน์สถานะกองงาน
     const repairCount = data.filter(row => {
-        const value = row['Type of Provider Group'];
-        return value && (value.toString().includes('Repair') || value.toString().includes('Repair Only'));
+        const workValue = row['Type of work'];
+        const statusValue = row['สถานะกองงาน'];
+        return workValue && 
+               workValue.toString().includes('Repair') && 
+               statusValue && 
+               (statusValue.toString().includes('หัวหน้า') || statusValue.toString().includes('ลูกน้อง'));
     }).length;
     
     return repairCount;
@@ -112,10 +120,10 @@ function createRepairTechsCard(data) {
     
     // นับจำนวนกองงานช่างซ่อม (นับเฉพาะที่มีคำว่า "หัวหน้า" ในคอลัมน์ "สถานะกองงาน")
     const repairGroupCount = data.filter(row => {
-        const typeValue = row['Type of Provider Group'];
+        const typeValue = row['Type of work'];
         const statusValue = row['สถานะกองงาน'];
         return typeValue && 
-              (typeValue.toString().includes('Repair') || typeValue.toString().includes('Repair Only')) && 
+              typeValue.toString().includes('Repair') && 
               statusValue && 
               statusValue.toString().includes('หัวหน้า');
     }).length;
@@ -172,12 +180,24 @@ function createRSMChart(data) {
         'RSM8_UPC-SOU'
     ];
 
-    // นับจำนวนหัวหน้าในแต่ละ RSM
-    const rsmCounts = rsmList.map(rsm => {
+    // นับจำนวนหัวหน้าตาม RSM และ Type of work
+    const installationCounts = rsmList.map(rsm => {
         return data.filter(row => 
             row['RSM'] === rsm && 
             row['สถานะกองงาน'] && 
-            row['สถานะกองงาน'].includes('หัวหน้า')
+            row['สถานะกองงาน'].includes('หัวหน้า') &&
+            row['Type of work'] && 
+            row['Type of work'].includes('Installation')
+        ).length;
+    });
+
+    const repairCounts = rsmList.map(rsm => {
+        return data.filter(row => 
+            row['RSM'] === rsm && 
+            row['สถานะกองงาน'] && 
+            row['สถานะกองงาน'].includes('หัวหน้า') &&
+            row['Type of work'] && 
+            row['Type of work'].includes('Repair')
         ).length;
     });
 
@@ -192,13 +212,22 @@ function createRSMChart(data) {
         type: 'bar',
         data: {
             labels: rsmList.map(rsm => rsm.split('_')[0]), // แสดงเฉพาะส่วนหน้า _
-            datasets: [{
-                label: 'จำนวนกองงาน',
-                data: rsmCounts,
-                backgroundColor: 'rgba(74, 111, 165, 0.8)',
-                borderColor: 'rgba(74, 111, 165, 1)',
-                borderWidth: 1
-            }]
+            datasets: [
+                {
+                    label: 'ช่างติดตั้ง',
+                    data: installationCounts,
+                    backgroundColor: 'rgba(52, 152, 219, 0.8)',
+                    borderColor: 'rgba(52, 152, 219, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'ช่างซ่อม',
+                    data: repairCounts,
+                    backgroundColor: 'rgba(231, 76, 60, 0.8)',
+                    borderColor: 'rgba(231, 76, 60, 1)',
+                    borderWidth: 1
+                }
+            ]
         },
         options: {
             responsive: true,
@@ -206,7 +235,7 @@ function createRSMChart(data) {
             plugins: {
                 title: {
                     display: true,
-                    text: 'จำนวนกองงานแยกตาม RSM',
+                    text: 'จำนวนกองงานแยกตาม RSM และประเภทงาน',
                     font: {
                         size: 16
                     },
@@ -218,10 +247,23 @@ function createRSMChart(data) {
                 legend: {
                     display: true,
                     position: 'top'
+                },
+                tooltip: {
+                    enabled: true,
+                    callbacks: {
+                        afterBody: function(context) {
+                            const total = context[0].parsed.y + context[1].parsed.y;
+                            return `รวม: ${total} กองงาน`;
+                        }
+                    }
                 }
             },
             scales: {
+                x: {
+                    stacked: true
+                },
                 y: {
+                    stacked: true,
                     beginAtZero: true,
                     ticks: {
                         stepSize: 1
@@ -237,16 +279,48 @@ function createRSMChart(data) {
         plugins: [{
             afterDraw: function(chart) {
                 var ctx = chart.ctx;
+                
+                // แสดงจำนวนของแต่ละประเภทในกราฟก่อน
                 chart.data.datasets.forEach(function(dataset, i) {
                     var meta = chart.getDatasetMeta(i);
                     meta.data.forEach(function(bar, index) {
                         var data = dataset.data[index];
-                        ctx.fillStyle = '#000000';
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'bottom';
-                        ctx.font = '12px Arial';
-                        ctx.fillText(data, bar.x, bar.y - 5);
+                        if (data > 0) {
+                            // คำนวณตำแหน่งกลางของแต่ละส่วนในแท่งกราฟ
+                            var yPosition;
+                            if (i === 0) {
+                                // สำหรับช่างติดตั้ง (ส่วนล่าง) - ตรงกลางของแท่งส่วนล่าง
+                                yPosition = bar.y - (bar.height / 2);
+                            } else {
+                                // สำหรับช่างซ่อม (ส่วนบน) - ตรงกลางของแท่งส่วนบน
+                                var bottomBarHeight = chart.getDatasetMeta(0).data[index].height;
+                                yPosition = bar.y - bottomBarHeight - (bar.height / 2);
+                            }
+                            
+                            ctx.fillStyle = '#FFFFFF';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            ctx.font = 'bold 12px Arial';
+                            ctx.fillText(data, bar.x, yPosition);
+                        }
                     });
+                });
+                
+                // แสดงจำนวนรวมเหนือกราฟหลังจากแสดงจำนวนในแท่ง
+                chart.data.labels.forEach(function(label, index) {
+                    const total = chart.data.datasets.reduce((sum, dataset) => sum + dataset.data[index], 0);
+                    const bar = chart.getDatasetMeta(0).data[index];
+                    
+                    // คำนวณตำแหน่งเหนือสุดของแท่งกราฟทั้งสองส่วน
+                    const bottomBarHeight = chart.getDatasetMeta(0).data[index].height;
+                    const topBarHeight = chart.getDatasetMeta(1).data[index].height;
+                    const totalBarHeight = bottomBarHeight + topBarHeight;
+                    
+                    ctx.fillStyle = '#000000';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'bottom';
+                    ctx.font = 'bold 14px Arial';
+                    ctx.fillText(total, bar.x, bar.y - totalBarHeight - 5);
                 });
             }
         }]
