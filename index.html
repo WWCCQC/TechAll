@@ -42,9 +42,9 @@
                 </div>
                 
                 <!-- ตาราง Pivot Table สำหรับกองงานช่าง - ต่อจากกราฟ -->
-                <div id="pivot-table-container" class="pivot-table-container" style="display: none; flex: 0 0 400px; min-width: 400px;">
+                <div id="pivot-table-container" class="pivot-table-container" style="display: none; flex: 0 0 400px; min-width: 400px; height: 300px;">
                     <h3 style="margin-bottom: 15px; color: var(--secondary-color); font-size: 1.1rem;">สรุปกองงานช่าง</h3>
-                    <table id="pivot-table" class="pivot-table">
+                    <table id="pivot-table" class="pivot-table" style="height: calc(100% - 50px);">
                         <thead>
                             <tr>
                                 <th>Provider</th>
@@ -651,9 +651,9 @@ function countRepairTechsInData(data) {
                     tableHTML += `
                         <tr>
                             <td>${provider}</td>
-                            <td>${installation}</td>
-                            <td>${repair}</td>
-                            <td>${total}</td>
+                            <td>${installation.toLocaleString()}</td>
+                            <td>${repair.toLocaleString()}</td>
+                            <td>${total.toLocaleString()}</td>
                         </tr>
                     `;
                 }
@@ -663,9 +663,9 @@ function countRepairTechsInData(data) {
             pivotTableBodyElement.innerHTML = tableHTML;
             
             // อัปเดตยอดรวม
-            document.getElementById('total-installation').textContent = totalInstallation;
-            document.getElementById('total-repair').textContent = totalRepair;
-            document.getElementById('grand-total').textContent = totalInstallation + totalRepair;
+            document.getElementById('total-installation').textContent = totalInstallation.toLocaleString();
+            document.getElementById('total-repair').textContent = totalRepair.toLocaleString();
+            document.getElementById('grand-total').textContent = (totalInstallation + totalRepair).toLocaleString();
             
             // แสดงตาราง
             pivotTableContainerElement.style.display = 'block';
