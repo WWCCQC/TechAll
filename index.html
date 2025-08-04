@@ -33,16 +33,48 @@
             </style>
         </div>
         
-        <!-- ปรับโครงสร้างใหม่ ให้การ์ดและกราฟอยู่แถวเดียวกัน -->
-        <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-            <div id="chart-container" class="chart-container" style="display: none; margin: 0; width: 500px; height: 300px;">
-                <canvas id="rsmChart"></canvas>
+        <!-- ปรับโครงสร้างใหม่ ให้กราฟและตารางอยู่ด้านซ้าย การ์ดอยู่ด้านขวา -->
+        <div id="dashboard-chart-container" style="display: flex; justify-content: space-between; margin-bottom: 20px; gap: 20px; flex-wrap: wrap;">
+            <!-- ด้านซ้าย: กราฟและตาราง -->
+            <div style="display: flex; gap: 20px; flex: 1; min-width: 0;">
+                <div id="chart-container" class="chart-container" style="display: none; margin: 0; width: 600px; height: 300px; flex-shrink: 0;">
+                    <canvas id="rsmChart"></canvas>
+                </div>
+                
+                <!-- ตาราง Pivot Table สำหรับกองงานช่าง - ต่อจากกราฟ -->
+                <div id="pivot-table-container" class="pivot-table-container" style="display: none; flex: 0 0 400px; min-width: 400px;">
+                    <h3 style="margin-bottom: 15px; color: var(--secondary-color); font-size: 1.1rem;">สรุปกองงานช่าง</h3>
+                    <table id="pivot-table" class="pivot-table">
+                        <thead>
+                            <tr>
+                                <th>Provider</th>
+                                <th>Install</th>
+                                <th>Repair</th>
+                                <th>รวม</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pivot-table-body">
+                            <!-- ข้อมูลจะถูกเพิ่มที่นี่ด้วย JavaScript -->
+                        </tbody>
+                        <tfoot>
+                            <tr id="pivot-total-row">
+                                <th>รวม</th>
+                                <th id="total-installation">0</th>
+                                <th id="total-repair">0</th>
+                                <th id="grand-total">0</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
             </div>
             
-            <div id="dashboard" class="dashboard" style="display: none; margin: 0;">
+            <!-- ด้านขวา: การ์ด -->
+            <div id="dashboard" class="dashboard" style="display: none; margin: 0; flex-shrink: 0;">
                 <!-- Dashboard cards will be populated here -->
             </div>
         </div>
+        
+
         
         <div id="table-container" class="table-container" style="display: none;">
             <div class="table-controls">
@@ -101,6 +133,8 @@
         const searchButtonElement = document.getElementById('search-button');
         const rowsSelectElement = document.getElementById('rows-select');
         const downloadExcelElement = document.getElementById('download-excel');
+        const pivotTableContainerElement = document.getElementById('pivot-table-container');
+        const pivotTableBodyElement = document.getElementById('pivot-table-body');
         
         // Data state
         let allData = []; // Original filtered data
@@ -313,6 +347,7 @@
                     loadingElement.style.display = 'none';
                     document.getElementById('dashboard').style.display = 'flex';
                     document.getElementById('chart-container').style.display = 'block';
+                    pivotTableContainerElement.style.display = 'block';
                     tableContainerElement.style.display = 'block';
                     
                     createDashboardSummary(filteredData);
@@ -557,6 +592,83 @@ function countRepairTechsInData(data) {
             
             // Create card for ช่างซ่อม
             createRepairTechsCard(data);
+            
+            // สร้างตาราง Pivot Table
+            createPivotTable(data);
+        }
+        
+        // สร้างตาราง Pivot Table สำหรับกองงานช่าง
+        function createPivotTable(data) {
+            if (data.length === 0) return;
+            
+            // กรองข้อมูลเฉพาะที่มีคำว่า "หัวหน้า" ในคอลัมน์ "สถานะกองงาน"
+            const leaderData = data.filter(row => {
+                const statusValue = row['สถานะกองงาน'];
+                return statusValue && statusValue.toString().includes('หัวหน้า');
+            });
+            
+            // สร้าง object สำหรับเก็บข้อมูลแยกตาม Provider
+            const pivotData = {};
+            
+            // ประมวลผลข้อมูล
+            leaderData.forEach(row => {
+                const provider = row['Provider'] || 'ไม่ระบุ';
+                const workType = row['Type of work'] || '';
+                
+                // สร้าง provider ใน pivotData ถ้ายังไม่มี
+                if (!pivotData[provider]) {
+                    pivotData[provider] = {
+                        installation: 0,
+                        repair: 0
+                    };
+                }
+                
+                // นับจำนวนตามประเภทงาน
+                if (workType.includes('Installation')) {
+                    pivotData[provider].installation++;
+                } else if (workType.includes('Repair')) {
+                    pivotData[provider].repair++;
+                }
+            });
+            
+            // สร้าง HTML สำหรับตาราง
+            let tableHTML = '';
+            let totalInstallation = 0;
+            let totalRepair = 0;
+            
+            // เรียงลำดับ Provider ตามที่ต้องการ
+            const providerOrder = ['True Tech', 'WW-Provider', 'เถ้าแก่เทค'];
+            
+            providerOrder.forEach(provider => {
+                if (pivotData[provider]) {
+                    const installation = pivotData[provider].installation;
+                    const repair = pivotData[provider].repair;
+                    const total = installation + repair;
+                    
+                    totalInstallation += installation;
+                    totalRepair += repair;
+                    
+                    tableHTML += `
+                        <tr>
+                            <td>${provider}</td>
+                            <td>${installation}</td>
+                            <td>${repair}</td>
+                            <td>${total}</td>
+                        </tr>
+                    `;
+                }
+            });
+            
+            // อัปเดตตาราง
+            pivotTableBodyElement.innerHTML = tableHTML;
+            
+            // อัปเดตยอดรวม
+            document.getElementById('total-installation').textContent = totalInstallation;
+            document.getElementById('total-repair').textContent = totalRepair;
+            document.getElementById('grand-total').textContent = totalInstallation + totalRepair;
+            
+            // แสดงตาราง
+            pivotTableContainerElement.style.display = 'block';
         }
         
         // ฟังก์ชัน debounce สำหรับการค้นหา
@@ -858,6 +970,7 @@ function countRepairTechsInData(data) {
             tableContainerElement.style.display = 'none';
             document.getElementById('dashboard').style.display = 'none';
             document.getElementById('chart-container').style.display = 'none';
+            pivotTableContainerElement.style.display = 'none';
             
             // รีเซ็ตแคชและดึงข้อมูลใหม่
             csvCache = null;
@@ -1129,7 +1242,7 @@ function countRepairTechsInData(data) {
                 }
             }
             
-            // อัปเดตการ์ดข้อมูลสรุปและกราฟ
+            // อัปเดตการ์ดข้อมูลสรุป กราฟ และตาราง Pivot
             createDashboardSummary(displayData);
             createRSMChart(displayData);
             

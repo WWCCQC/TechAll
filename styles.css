@@ -90,19 +90,20 @@ h1 {
 
 .dashboard {
     display: flex;
-    gap: 15px;
+    gap: 10px;
     margin-bottom: 20px;
     justify-content: flex-end;
     flex-wrap: wrap;
+    max-width: 600px;
 }
 
 .card {
     background-color: white;
     border-radius: 8px;
-    padding: 12px 10px;
+    padding: 10px 8px;
     box-shadow: var(--box-shadow);
     transition: transform 0.3s ease;
-    width: 180px;
+    width: 140px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -115,16 +116,16 @@ h1 {
 
 .card h3 {
     color: var(--secondary-color);
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     border-bottom: 2px solid var(--accent-color);
-    padding-bottom: 6px;
+    padding-bottom: 4px;
     width: 100%;
-    font-size: 1.1rem;
+    font-size: 0.95rem;
 }
 
 .card-icon {
-    font-size: 36px;
-    margin-bottom: 8px;
+    font-size: 28px;
+    margin-bottom: 6px;
     color: var(--primary-color);
 }
 
@@ -133,15 +134,15 @@ h1 {
 }
 
 .count-number {
-    font-size: 32px;
+    font-size: 26px;
     font-weight: bold;
     color: #114477; /* สีน้ำเงินเข้ม */
-    margin-top: 10px;
+    margin-top: 8px;
 }
 
 .card-detail-line {
-    margin: 5px 0;
-    font-size: 14px;
+    margin: 4px 0;
+    font-size: 12px;
     display: flex;
     justify-content: space-between;
     width: 100%;
@@ -156,7 +157,7 @@ h1 {
 .card-detail-value {
     font-weight: bold;
     color: #114477;
-    font-size: 16px;
+    font-size: 14px;
 }
 
 .table-container {
@@ -414,6 +415,50 @@ button:hover {
     .search-input {
         flex-grow: 1;
     }
+    
+    /* ปรับการ์ดและกราฟสำหรับหน้าจอเล็ก */
+    #dashboard-chart-container {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .dashboard {
+        max-width: 100%;
+        gap: 8px;
+        justify-content: center;
+    }
+    
+    .card {
+        width: calc(50% - 4px);
+        min-width: 120px;
+    }
+    
+    .chart-container {
+        width: 100%;
+        min-width: 300px;
+        height: 250px;
+        order: -1; /* ให้กราฟอยู่ด้านบน */
+    }
+}
+
+/* สำหรับหน้าจอขนาดกลาง */
+@media (max-width: 1200px) and (min-width: 769px) {
+    #dashboard-chart-container {
+        gap: 15px;
+    }
+    
+    .chart-container {
+        width: 500px;
+        height: 280px;
+    }
+    
+    .dashboard {
+        max-width: 500px;
+    }
+    
+    .card {
+        width: 130px;
+    }
 }
 
 /* เพิ่มสไตล์สำหรับ multiselect dropdown */
@@ -521,11 +566,99 @@ button:hover {
     border-radius: 8px;
     padding: 15px;
     box-shadow: var(--box-shadow);
-    width: 500px;
-    min-width: 300px;
+    width: 600px;
+    min-width: 400px;
     height: 300px;
     margin: 20px 0;
     flex-shrink: 0;
+}
+
+/* สไตล์สำหรับตาราง Pivot Table */
+.pivot-table-container {
+    background-color: white;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: var(--box-shadow);
+    overflow-x: auto;
+    height: fit-content;
+}
+
+.pivot-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 0.9rem;
+}
+
+.pivot-table th,
+.pivot-table td {
+    padding: 8px 10px;
+    text-align: center;
+    border: 1px solid var(--light-gray);
+}
+
+.pivot-table th {
+    background-color: var(--secondary-color);
+    color: white;
+    font-weight: bold;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.pivot-table tbody tr:nth-child(even) {
+    background-color: var(--light-gray);
+}
+
+.pivot-table tbody tr:hover {
+    background-color: rgba(79, 195, 220, 0.1);
+}
+
+.pivot-table tfoot tr {
+    background-color: #e3f2fd;
+    font-weight: bold;
+}
+
+.pivot-table tfoot th {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.pivot-table tfoot td {
+    background-color: #e3f2fd;
+    font-weight: bold;
+    color: var(--secondary-color);
+}
+
+/* Responsive สำหรับตาราง Pivot */
+@media (max-width: 768px) {
+    .pivot-table-container {
+        padding: 15px;
+        flex: 1 1 100% !important;
+        min-width: 100% !important;
+    }
+    
+    .pivot-table th,
+    .pivot-table td {
+        padding: 8px 10px;
+        font-size: 0.9rem;
+    }
+    
+    #additional-charts-container {
+        flex: 1 1 100% !important;
+        min-width: 100% !important;
+    }
+}
+
+/* สำหรับหน้าจอขนาดกลาง */
+@media (max-width: 1200px) and (min-width: 769px) {
+    .pivot-table-container {
+        flex: 0 0 40% !important;
+    }
+    
+    #additional-charts-container {
+        flex: 0 0 55% !important;
+    }
 }
 
 @keyframes spin {
