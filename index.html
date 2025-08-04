@@ -444,29 +444,33 @@
         }
         
         // นับจำนวนช่างติดตั้ง
-        function countInstallTechsInData(data) {
-            // นับจำนวนข้อมูลที่มีคำว่า "Install" หรือ "Install-Repair" ในคอลัมน์ Type of Provider Group
-            const installCount = data.filter(row => {
-                const value = row['Type of Provider Group'];
-                return value && (value.toString().includes('Install') || value.toString().includes('Install-Repair'));
-            }).length;
-            
-            return installCount;
-        }
+function countInstallTechsInData(data) {
+    // นับจำนวนข้อมูลที่มีคำว่า "Installation" ในคอลัมน์ Type of work และมีคำว่า "หัวหน้า" หรือ "ลูกน้อง" ในคอลัมน์สถานะกองงาน
+    const installCount = data.filter(row => {
+        const workValue = row['Type of work'];
+        const statusValue = row['สถานะกองงาน'];
+        return workValue && 
+               workValue.toString().includes('Installation') && 
+               statusValue && 
+               (statusValue.toString().includes('หัวหน้า') || statusValue.toString().includes('ลูกน้อง'));
+    }).length;
+    
+    return installCount;
+}
         
         // สร้างการ์ดสำหรับแสดงจำนวนช่างติดตั้ง
-        function createInstallTechsCard(data) {
-            const installCount = countInstallTechsInData(data);
-            
-            // นับจำนวนกองงานช่างติดตั้ง (นับเฉพาะที่มีคำว่า "หัวหน้า" ในคอลัมน์ "สถานะกองงาน")
-            const installGroupCount = data.filter(row => {
-                const typeValue = row['Type of Provider Group'];
-                const statusValue = row['สถานะกองงาน'];
-                return typeValue && 
-                      (typeValue.toString().includes('Install') || typeValue.toString().includes('Install-Repair')) && 
-                      statusValue && 
-                      statusValue.toString().includes('หัวหน้า');
-            }).length;
+function createInstallTechsCard(data) {
+    const installCount = countInstallTechsInData(data);
+    
+    // นับจำนวนกองงานช่างติดตั้ง (นับเฉพาะที่มีคำว่า "หัวหน้า" ในคอลัมน์ "สถานะกองงาน")
+    const installGroupCount = data.filter(row => {
+        const typeValue = row['Type of work'];
+        const statusValue = row['สถานะกองงาน'];
+        return typeValue && 
+              typeValue.toString().includes('Installation') && 
+              statusValue && 
+              statusValue.toString().includes('หัวหน้า');
+    }).length;
             
             // สร้างการ์ด
             const card = document.createElement('div');
@@ -488,29 +492,33 @@
         }
         
         // นับจำนวนช่างซ่อม
-        function countRepairTechsInData(data) {
-            // นับจำนวนข้อมูลที่มีคำว่า "Repair" ในคอลัมน์ Type of Provider Group
-            const repairCount = data.filter(row => {
-                const value = row['Type of Provider Group'];
-                return value && (value.toString().includes('Repair') || value.toString().includes('Repair Only'));
-            }).length;
-            
-            return repairCount;
-        }
+function countRepairTechsInData(data) {
+    // นับจำนวนข้อมูลที่มีคำว่า "Repair" ในคอลัมน์ Type of work และมีคำว่า "หัวหน้า" หรือ "ลูกน้อง" ในคอลัมน์สถานะกองงาน
+    const repairCount = data.filter(row => {
+        const workValue = row['Type of work'];
+        const statusValue = row['สถานะกองงาน'];
+        return workValue && 
+               workValue.toString().includes('Repair') && 
+               statusValue && 
+               (statusValue.toString().includes('หัวหน้า') || statusValue.toString().includes('ลูกน้อง'));
+    }).length;
+    
+    return repairCount;
+}
         
         // สร้างการ์ดสำหรับแสดงจำนวนช่างซ่อม
         function createRepairTechsCard(data) {
             const repairCount = countRepairTechsInData(data);
             
-            // นับจำนวนกองงานช่างซ่อม (นับเฉพาะที่มีคำว่า "หัวหน้า" ในคอลัมน์ "สถานะกองงาน")
-            const repairGroupCount = data.filter(row => {
-                const typeValue = row['Type of Provider Group'];
-                const statusValue = row['สถานะกองงาน'];
-                return typeValue && 
-                      (typeValue.toString().includes('Repair') || typeValue.toString().includes('Repair Only')) && 
-                      statusValue && 
-                      statusValue.toString().includes('หัวหน้า');
-            }).length;
+                // นับจำนวนกองงานช่างซ่อม (นับเฉพาะที่มีคำว่า "หัวหน้า" ในคอลัมน์ "สถานะกองงาน")
+    const repairGroupCount = data.filter(row => {
+        const typeValue = row['Type of work'];
+        const statusValue = row['สถานะกองงาน'];
+        return typeValue && 
+              typeValue.toString().includes('Repair') && 
+              statusValue && 
+              statusValue.toString().includes('หัวหน้า');
+    }).length;
             
             // สร้างการ์ด
             const card = document.createElement('div');
