@@ -280,7 +280,7 @@ function createRSMChart(data) {
             afterDraw: function(chart) {
                 var ctx = chart.ctx;
                 
-                // แสดงจำนวนของแต่ละประเภทในกราฟก่อน
+                // แสดงจำนวนของแต่ละประเภทในกราฟ
                 chart.data.datasets.forEach(function(dataset, i) {
                     var meta = chart.getDatasetMeta(i);
                     meta.data.forEach(function(bar, index) {
@@ -288,14 +288,11 @@ function createRSMChart(data) {
                         if (data > 0) {
                             // คำนวณตำแหน่งกลางของแต่ละส่วนในแท่งกราฟ
                             var yPosition;
-                            if (i === 0) {
-                                // สำหรับช่างติดตั้ง (ส่วนล่าง) - ตรงกลางของแท่งส่วนล่าง
-                                yPosition = bar.y - (bar.height / 2);
-                            } else {
-                                // สำหรับช่างซ่อม (ส่วนบน) - ตรงกลางของแท่งส่วนบน
-                                var bottomBarHeight = chart.getDatasetMeta(0).data[index].height;
-                                yPosition = bar.y - bottomBarHeight - (bar.height / 2);
-                            }
+                            
+                            // สำหรับกราฟแบบ stacked ต้องใช้ตำแหน่งจริงของแต่ละส่วน
+                            var barTop = bar.y - bar.height;
+                            var barBottom = bar.y;
+                            yPosition = barTop + (bar.height / 2);
                             
                             ctx.fillStyle = '#FFFFFF';
                             ctx.textAlign = 'center';
@@ -306,21 +303,23 @@ function createRSMChart(data) {
                     });
                 });
                 
-                // แสดงจำนวนรวมเหนือกราฟหลังจากแสดงจำนวนในแท่ง
+                // แสดงจำนวนรวมเหนือกราฟ
                 chart.data.labels.forEach(function(label, index) {
                     const total = chart.data.datasets.reduce((sum, dataset) => sum + dataset.data[index], 0);
-                    const bar = chart.getDatasetMeta(0).data[index];
-                    
-                    // คำนวณตำแหน่งเหนือสุดของแท่งกราฟทั้งสองส่วน
-                    const bottomBarHeight = chart.getDatasetMeta(0).data[index].height;
-                    const topBarHeight = chart.getDatasetMeta(1).data[index].height;
-                    const totalBarHeight = bottomBarHeight + topBarHeight;
-                    
-                    ctx.fillStyle = '#000000';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'bottom';
-                    ctx.font = 'bold 14px Arial';
-                    ctx.fillText(total, bar.x, bar.y - totalBarHeight - 5);
+                    if (total > 0) {
+                        // หาตำแหน่งเหนือสุดของแท่งกราฟทั้งสองส่วน
+                        const bottomBar = chart.getDatasetMeta(0).data[index];
+                        const topBar = chart.getDatasetMeta(1).data[index];
+                        
+                        // ตำแหน่งเหนือสุดคือด้านบนของแท่งที่สูงที่สุด
+                        const topMost = Math.min(bottomBar.y - bottomBar.height, topBar.y - topBar.height);
+                        
+                        ctx.fillStyle = '#000000';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'bottom';
+                        ctx.font = 'bold 14px Arial';
+                        ctx.fillText(total, bottomBar.x, topMost - 5);
+                    }
                 });
             }
         }]

@@ -1202,6 +1202,65 @@ function countRepairTechsInData(data) {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    animation: {
+                        onComplete: function(animation) {
+                            // ยอดรวมเหนือกราฟ: ใช้ Canvas API ใน animation.onComplete
+                            // รอให้กราฟโหลดเสร็จก่อน
+                            const chart = animation.chart;
+                            const ctx = chart.ctx;
+                            
+                            // แสดงจำนวนรวมเหนือกราฟ และตัวเลขในแท่ง
+                            chart.data.labels.forEach(function(label, index) {
+                                // คำนวณยอดรวม: Installation + Repair
+                                const total = chart.data.datasets.reduce((sum, dataset) => sum + dataset.data[index], 0);
+                                
+                                if (total > 0) {
+                                    // หา y position ของแท่งบนสุด (dataset ล่าสุดที่มีข้อมูล)
+                                    let topY = chart.chartArea.bottom;
+                                    for (let i = chart.data.datasets.length - 1; i >= 0; i--) {
+                                        if (chart.data.datasets[i].data[index] > 0) {
+                                            const meta = chart.getDatasetMeta(i);
+                                            const bar = meta.data[index];
+                                            topY = bar.y;
+                                            break;
+                                        }
+                                    }
+                                    
+                                    // ใช้ x position จาก dataset แรก
+                                    const meta0 = chart.getDatasetMeta(0);
+                                    const bar0 = meta0.data[index];
+                                    
+                                    // วาดยอดรวมเหนือแท่ง
+                                    ctx.fillStyle = '#000000';
+                                    ctx.textAlign = 'center';
+                                    ctx.textBaseline = 'bottom';
+                                    ctx.font = 'bold 14px Arial';
+                                    ctx.fillText(total, bar0.x, topY - 10);
+                                }
+                                
+                                // แสดงตัวเลขในแต่ละแท่ง
+                                chart.data.datasets.forEach(function(dataset, datasetIndex) {
+                                    const value = dataset.data[index];
+                                    if (value > 0) {
+                                        const meta = chart.getDatasetMeta(datasetIndex);
+                                        const bar = meta.data[index];
+                                        
+                                        // ใช้สีขาวสำหรับตัวเลขในแท่ง
+                                        ctx.fillStyle = '#FFFFFF';
+                                        ctx.strokeStyle = '#000000';
+                                        ctx.lineWidth = 1;
+                                        ctx.textAlign = 'center';
+                                        ctx.textBaseline = 'middle';
+                                        ctx.font = 'bold 12px Arial';
+                                        
+                                        // แสดงตัวเลขตรงกลางแท่ง
+                                        ctx.strokeText(value, bar.x, bar.y);
+                                        ctx.fillText(value, bar.x, bar.y);
+                                    }
+                                });
+                            });
+                        }
+                    },
                     plugins: {
                         title: {
                             display: true,
@@ -1222,7 +1281,16 @@ function countRepairTechsInData(data) {
                             enabled: true,
                             callbacks: {
                                 afterBody: function(context) {
-                                    const total = context[0].parsed.y + context[1].parsed.y;
+                                    const total = context.reduce((sum, item) => sum + item.parsed.y, 0);
+                                    return `รวม: ${total} กองงาน`;
+                                }
+                            }
+                        },
+                        tooltip: {
+                            enabled: true,
+                            callbacks: {
+                                afterBody: function(context) {
+                                    const total = context.reduce((sum, item) => sum + item.parsed.y, 0);
                                     return `รวม: ${total} กองงาน`;
                                 }
                             }
@@ -1242,42 +1310,10 @@ function countRepairTechsInData(data) {
                     },
                     layout: {
                         padding: {
-                            top: 20
+                            top: 30 // เพิ่ม padding สำหรับยอดรวม
                         }
                     }
-                },
-                plugins: [{
-                    afterDraw: function(chart) {
-                        var ctx = chart.ctx;
-                        
-                        // แสดงจำนวนรวมเหนือกราฟ
-                        chart.data.labels.forEach(function(label, index) {
-                            const total = chart.data.datasets.reduce((sum, dataset) => sum + dataset.data[index], 0);
-                            const bar = chart.getDatasetMeta(0).data[index];
-                            
-                            ctx.fillStyle = '#000000';
-                            ctx.textAlign = 'center';
-                            ctx.textBaseline = 'bottom';
-                            ctx.font = 'bold 14px Arial';
-                            ctx.fillText(total, bar.x, bar.y - 5);
-                        });
-                        
-                        // แสดงจำนวนของแต่ละประเภทในกราฟ
-                        chart.data.datasets.forEach(function(dataset, i) {
-                            var meta = chart.getDatasetMeta(i);
-                            meta.data.forEach(function(bar, index) {
-                                var data = dataset.data[index];
-                                if (data > 0) {
-                                    ctx.fillStyle = '#FFFFFF';
-                                    ctx.textAlign = 'center';
-                                    ctx.textBaseline = 'middle';
-                                    ctx.font = 'bold 12px Arial';
-                                    ctx.fillText(data, bar.x, bar.y);
-                                }
-                            });
-                        });
-                    }
-                }]
+                }
             });
         }
         
