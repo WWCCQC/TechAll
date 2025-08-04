@@ -453,11 +453,41 @@
             const card = document.createElement('div');
             card.className = 'card';
             card.style.flex = '1';
+            card.style.cursor = 'pointer';
+            card.style.transition = 'all 0.3s ease';
             card.innerHTML = `
             <i class="fas fa-building card-icon"></i>
             <h3>จำนวนช่าง<br>(กองงาน)</h3>
             <div class="count-number">${leadersCount.toLocaleString()}</div>
             `;
+            
+            // เพิ่ม click event
+            card.addEventListener('click', function() {
+                // กรองข้อมูลเฉพาะหัวหน้า (กองงาน)
+                const filteredData = data.filter(row => {
+                    const statusValue = row['สถานะกองงาน'];
+                    return statusValue && statusValue.toString().includes('หัวหน้า');
+                });
+                
+                // อัปเดตการ์ดและตาราง
+                createDashboardSummary(filteredData);
+                createRSMChart(allData, filteredData);
+                showFilterMessage('แสดงข้อมูลเฉพาะหัวหน้ากองงาน');
+                
+                // เพิ่ม visual feedback
+                highlightActiveCard(card);
+            });
+            
+            // เพิ่ม hover effect
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+                this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = '';
+            });
             
             return card;
         }
@@ -476,11 +506,35 @@
             const card = document.createElement('div');
             card.className = 'card';
             card.style.flex = '1';
+            card.style.cursor = 'pointer';
+            card.style.transition = 'all 0.3s ease';
             card.innerHTML = `
             <i class="fas fa-users card-icon"></i>
             <h3>จำนวนช่าง<br>(คน)</h3>
             <div class="count-number">${techsCount.toLocaleString()}</div>
             `;
+            
+            // เพิ่ม click event
+            card.addEventListener('click', function() {
+                // แสดงข้อมูลทั้งหมด (ไม่กรอง)
+                createDashboardSummary(allData);
+                createRSMChart(allData);
+                showFilterMessage('แสดงข้อมูลทั้งหมด');
+                
+                // เพิ่ม visual feedback
+                highlightActiveCard(card);
+            });
+            
+            // เพิ่ม hover effect
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+                this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = '';
+            });
             
             return card;
         }
@@ -518,6 +572,8 @@ function createInstallTechsCardElement(data) {
             const card = document.createElement('div');
             card.className = 'card';
             card.style.flex = '1';
+            card.style.cursor = 'pointer';
+            card.style.transition = 'all 0.3s ease';
             card.innerHTML = `
             <i class="fas fa-tools card-icon"></i>
             <h3>ช่างติดตั้ง</h3>
@@ -530,6 +586,34 @@ function createInstallTechsCardElement(data) {
                 <span class="card-detail-label">คน</span>
             </div>
             `;
+            
+            // เพิ่ม click event
+            card.addEventListener('click', function() {
+                // กรองข้อมูลเฉพาะช่างติดตั้ง
+                const filteredData = data.filter(row => {
+                    const workType = row['Type of work'];
+                    return workType && workType.toString().includes('Installation');
+                });
+                
+                // อัปเดตการ์ดและตาราง
+                createDashboardSummary(filteredData);
+                createRSMChart(allData, filteredData);
+                showFilterMessage('แสดงข้อมูลเฉพาะช่างติดตั้ง');
+                
+                // เพิ่ม visual feedback
+                highlightActiveCard(card);
+            });
+            
+            // เพิ่ม hover effect
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+                this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = '';
+            });
             
             return card;
         }
@@ -567,6 +651,8 @@ function countRepairTechsInData(data) {
             const card = document.createElement('div');
             card.className = 'card';
             card.style.flex = '1';
+            card.style.cursor = 'pointer';
+            card.style.transition = 'all 0.3s ease';
             card.innerHTML = `
             <i class="fas fa-wrench card-icon"></i>
             <h3>ช่างซ่อม</h3>
@@ -579,6 +665,34 @@ function countRepairTechsInData(data) {
                 <span class="card-detail-label">คน</span>
             </div>
             `;
+            
+            // เพิ่ม click event
+            card.addEventListener('click', function() {
+                // กรองข้อมูลเฉพาะช่างซ่อม
+                const filteredData = data.filter(row => {
+                    const workType = row['Type of work'];
+                    return workType && workType.toString().includes('Repair');
+                });
+                
+                // อัปเดตการ์ดและตาราง
+                createDashboardSummary(filteredData);
+                createRSMChart(allData, filteredData);
+                showFilterMessage('แสดงข้อมูลเฉพาะช่างซ่อม');
+                
+                // เพิ่ม visual feedback
+                highlightActiveCard(card);
+            });
+            
+            // เพิ่ม hover effect
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+                this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = '';
+            });
             
             return card;
         }
@@ -708,6 +822,19 @@ function countRepairTechsInData(data) {
             pivotTableContainerElement.style.display = 'block';
         }
         
+        // ฟังก์ชันไฮไลท์การ์ดที่เลือก
+        function highlightActiveCard(activeCard) {
+            // ลบไฮไลท์จากทุกการ์ด
+            document.querySelectorAll('.card').forEach(card => {
+                card.style.border = '';
+                card.style.backgroundColor = '';
+            });
+            
+            // ไฮไลท์การ์ดที่เลือก
+            activeCard.style.border = '3px solid #3498db';
+            activeCard.style.backgroundColor = '#f8f9fa';
+        }
+        
         // เพิ่มการจัดการ click ที่พื้นที่ว่างของกราฟ
         function setupChartClickHandler() {
             const chartContainer = document.getElementById('chart-container');
@@ -730,12 +857,38 @@ function countRepairTechsInData(data) {
                         
                         // ถ้าไม่มี elements แสดงว่าคลิกที่พื้นที่ว่าง
                         if (elements.length === 0) {
-                            currentFilter = null;
-                            createDashboardSummary(allData);
-                            createRSMChart(allData);
-                            showFilterMessage('แสดงข้อมูลทั้งหมด');
+                            resetToAllData();
                         }
                     }
+                }
+            });
+        }
+        
+        // ฟังก์ชันรีเซ็ตกลับไปแสดงข้อมูลทั้งหมด
+        function resetToAllData() {
+            currentFilter = null;
+            createDashboardSummary(allData);
+            createRSMChart(allData);
+            showFilterMessage('แสดงข้อมูลทั้งหมด');
+            
+            // ลบไฮไลท์จากทุกการ์ด
+            document.querySelectorAll('.card').forEach(card => {
+                card.style.border = '';
+                card.style.backgroundColor = '';
+            });
+        }
+        
+        // เพิ่มการจัดการ click ที่พื้นที่ว่างของหน้าเว็บ
+        function setupGlobalClickHandler() {
+            document.addEventListener('click', function(event) {
+                // ตรวจสอบว่าคลิกที่พื้นที่ว่างหรือไม่ (ไม่ใช่ที่การ์ด กราฟ หรือตาราง)
+                const isCard = event.target.closest('.card');
+                const isChart = event.target.closest('#chart-container');
+                const isTable = event.target.closest('#pivot-table-container');
+                const isDashboard = event.target.closest('#dashboard');
+                
+                if (!isCard && !isChart && !isTable && !isDashboard) {
+                    resetToAllData();
                 }
             });
         }
@@ -1610,6 +1763,7 @@ function countRepairTechsInData(data) {
         window.addEventListener('DOMContentLoaded', function() {
             fetchDataAndVisualize();
             initializeVisitorCounter();
+            setupGlobalClickHandler();
         });
     </script>
 </body>
