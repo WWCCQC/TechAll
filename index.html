@@ -106,6 +106,10 @@
     <footer>
         <div class="container">
             <p>&copy; 2025 Data Technician Dashboard</p>
+            <div id="visitor-counter" style="position: fixed; bottom: 20px; right: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 10px 15px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.2); z-index: 1000; font-size: 14px;">
+                <i class="fas fa-users" style="margin-right: 8px;"></i>
+                <span id="counter-number">0</span> ผู้เยี่ยมชม
+            </div>
         </div>
     </footer>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
@@ -1561,8 +1565,52 @@ function countRepairTechsInData(data) {
             });
         }
         
+        // Visitor Counter Functions
+        function initializeVisitorCounter() {
+            // ดึงจำนวนผู้เยี่ยมชมจาก localStorage
+            let visitorCount = localStorage.getItem('visitorCount') || 0;
+            
+            // เพิ่มจำนวนผู้เยี่ยมชม
+            visitorCount = parseInt(visitorCount) + 1;
+            
+            // บันทึกลง localStorage
+            localStorage.setItem('visitorCount', visitorCount);
+            
+            // แสดงจำนวนผู้เยี่ยมชม
+            updateVisitorCounter(visitorCount);
+            
+            // เพิ่ม animation เมื่อโหลดหน้า
+            animateCounter(visitorCount);
+        }
+        
+        function updateVisitorCounter(count) {
+            const counterElement = document.getElementById('counter-number');
+            if (counterElement) {
+                counterElement.textContent = count.toLocaleString();
+            }
+        }
+        
+        function animateCounter(finalCount) {
+            const counterElement = document.getElementById('counter-number');
+            if (!counterElement) return;
+            
+            let currentCount = 0;
+            const increment = Math.ceil(finalCount / 50); // แบ่งเป็น 50 ขั้นตอน
+            const interval = setInterval(() => {
+                currentCount += increment;
+                if (currentCount >= finalCount) {
+                    currentCount = finalCount;
+                    clearInterval(interval);
+                }
+                counterElement.textContent = currentCount.toLocaleString();
+            }, 50); // อัปเดตทุก 50ms
+        }
+        
         // Initialize
-        window.addEventListener('DOMContentLoaded', fetchDataAndVisualize);
+        window.addEventListener('DOMContentLoaded', function() {
+            fetchDataAndVisualize();
+            initializeVisitorCounter();
+        });
     </script>
 </body>
 </html>
