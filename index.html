@@ -37,22 +37,22 @@
         <div id="dashboard-chart-container" style="display: flex; justify-content: space-between; margin-bottom: 20px; gap: 20px; flex-wrap: wrap;">
             <!-- ด้านซ้าย: กราฟและตาราง -->
             <div style="display: flex; gap: 20px; flex: 1; min-width: 0;">
-                <div id="chart-container" class="chart-container" style="display: none; margin: 0; width: 600px; height: 300px; flex-shrink: 0;">
+                <div id="chart-container" class="chart-container" style="display: none; margin: 0; width: 50%; height: 300px; flex-shrink: 0;">
                     <canvas id="rsmChart"></canvas>
                 </div>
                 
                 <!-- ตาราง Pivot Table สำหรับกองงานช่าง - ต่อจากกราฟ -->
-                <div id="pivot-table-container" class="pivot-table-container" style="display: none; flex: 0 0 400px; min-width: 400px; height: 300px;">
+                <div id="pivot-table-container" class="pivot-table-container" style="display: none; flex: 0 0 35%; min-width: 300px; height: 300px;">
                     <h3 style="margin-bottom: 15px; color: var(--secondary-color); font-size: 1.1rem;">สรุปกองงานช่าง</h3>
-                    <table id="pivot-table" class="pivot-table" style="height: calc(100% - 50px);">
-                        <thead>
-                            <tr>
-                                <th>Provider</th>
-                                <th>Install</th>
-                                <th>Repair</th>
-                                <th>รวม</th>
-                            </tr>
-                        </thead>
+                                    <table id="pivot-table" class="pivot-table" style="height: calc(100% - 50px);">
+                    <thead>
+                        <tr>
+                            <th>Provider</th>
+                            <th>Install</th>
+                            <th>Repair</th>
+                            <th>รวม</th>
+                        </tr>
+                    </thead>
                         <tbody id="pivot-table-body">
                             <!-- ข้อมูลจะถูกเพิ่มที่นี่ด้วย JavaScript -->
                         </tbody>
@@ -69,7 +69,7 @@
             </div>
             
             <!-- ด้านขวา: การ์ด -->
-            <div id="dashboard" class="dashboard" style="display: none; margin: 0; flex-shrink: 0;">
+            <div id="dashboard" class="dashboard" style="display: none; margin: 0; flex: 0 0 15%; min-width: 200px; display: flex; flex-direction: column; gap: 10px;">
                 <!-- Dashboard cards will be populated here -->
             </div>
         </div>
@@ -441,19 +441,20 @@
         }
         
         // สร้างการ์ดสำหรับแสดงจำนวนหัวหน้า
-        function createLeadersCard(data) {
+        function createLeadersCardElement(data) {
             const leadersCount = countLeadersInData(data);
             
             // สร้างการ์ด
             const card = document.createElement('div');
             card.className = 'card';
+            card.style.flex = '1';
             card.innerHTML = `
             <i class="fas fa-building card-icon"></i>
             <h3>จำนวนช่าง<br>(กองงาน)</h3>
             <div class="count-number">${leadersCount.toLocaleString()}</div>
             `;
             
-            dashboardElement.appendChild(card);
+            return card;
         }
         
         // นับจำนวนช่าง
@@ -463,19 +464,20 @@
         }
         
         // สร้างการ์ดสำหรับแสดงจำนวนช่าง(คน)
-        function createTechsCard(data) {
+        function createTechsCardElement(data) {
             const techsCount = countTechsInData(data);
             
             // สร้างการ์ด
             const card = document.createElement('div');
             card.className = 'card';
+            card.style.flex = '1';
             card.innerHTML = `
             <i class="fas fa-users card-icon"></i>
             <h3>จำนวนช่าง<br>(คน)</h3>
             <div class="count-number">${techsCount.toLocaleString()}</div>
             `;
             
-            dashboardElement.appendChild(card);
+            return card;
         }
         
         // นับจำนวนช่างติดตั้ง
@@ -494,7 +496,7 @@ function countInstallTechsInData(data) {
 }
         
         // สร้างการ์ดสำหรับแสดงจำนวนช่างติดตั้ง
-function createInstallTechsCard(data) {
+function createInstallTechsCardElement(data) {
     const installCount = countInstallTechsInData(data);
     
     // นับจำนวนกองงานช่างติดตั้ง (นับเฉพาะที่มีคำว่า "หัวหน้า" ในคอลัมน์ "สถานะกองงาน")
@@ -510,6 +512,7 @@ function createInstallTechsCard(data) {
             // สร้างการ์ด
             const card = document.createElement('div');
             card.className = 'card';
+            card.style.flex = '1';
             card.innerHTML = `
             <i class="fas fa-tools card-icon"></i>
             <h3>ช่างติดตั้ง</h3>
@@ -523,7 +526,7 @@ function createInstallTechsCard(data) {
             </div>
             `;
             
-            dashboardElement.appendChild(card);
+            return card;
         }
         
         // นับจำนวนช่างซ่อม
@@ -542,7 +545,7 @@ function countRepairTechsInData(data) {
 }
         
         // สร้างการ์ดสำหรับแสดงจำนวนช่างซ่อม
-        function createRepairTechsCard(data) {
+        function createRepairTechsCardElement(data) {
             const repairCount = countRepairTechsInData(data);
             
                 // นับจำนวนกองงานช่างซ่อม (นับเฉพาะที่มีคำว่า "หัวหน้า" ในคอลัมน์ "สถานะกองงาน")
@@ -558,6 +561,7 @@ function countRepairTechsInData(data) {
             // สร้างการ์ด
             const card = document.createElement('div');
             card.className = 'card';
+            card.style.flex = '1';
             card.innerHTML = `
             <i class="fas fa-wrench card-icon"></i>
             <h3>ช่างซ่อม</h3>
@@ -571,7 +575,7 @@ function countRepairTechsInData(data) {
             </div>
             `;
             
-            dashboardElement.appendChild(card);
+            return card;
         }
         
         // Create dashboard summary cards for specific columns
@@ -581,17 +585,45 @@ function countRepairTechsInData(data) {
             // Clear dashboard
             dashboardElement.innerHTML = '';
             
-            // Create card for จำนวนหัวหน้าจากคอลัมน์สถานะกองงาน
-            createLeadersCard(data);
+            // สร้าง container สำหรับการ์ด 2 แถว
+            const cardContainer = document.createElement('div');
+            cardContainer.style.display = 'flex';
+            cardContainer.style.flexDirection = 'column';
+            cardContainer.style.gap = '10px';
+            cardContainer.style.width = '100%';
             
-            // Create card for จำนวนช่าง(คน)
-            createTechsCard(data);
+            // แถวที่ 1: การ์ด 2 อัน
+            const row1 = document.createElement('div');
+            row1.style.display = 'flex';
+            row1.style.gap = '10px';
+            row1.style.width = '100%';
             
-            // Create card for ช่างติดตั้ง
-            createInstallTechsCard(data);
+            // แถวที่ 2: การ์ด 2 อัน
+            const row2 = document.createElement('div');
+            row2.style.display = 'flex';
+            row2.style.gap = '10px';
+            row2.style.width = '100%';
             
-            // Create card for ช่างซ่อม
-            createRepairTechsCard(data);
+            // สร้างการ์ดแถวที่ 1
+            const leadersCard = createLeadersCardElement(data);
+            const techsCard = createTechsCardElement(data);
+            
+            // สร้างการ์ดแถวที่ 2
+            const installCard = createInstallTechsCardElement(data);
+            const repairCard = createRepairTechsCardElement(data);
+            
+            // เพิ่มการ์ดเข้าแถว
+            row1.appendChild(leadersCard);
+            row1.appendChild(techsCard);
+            row2.appendChild(installCard);
+            row2.appendChild(repairCard);
+            
+            // เพิ่มแถวเข้า container
+            cardContainer.appendChild(row1);
+            cardContainer.appendChild(row2);
+            
+            // เพิ่ม container เข้า dashboard
+            dashboardElement.appendChild(cardContainer);
             
             // สร้างตาราง Pivot Table
             createPivotTable(data);
