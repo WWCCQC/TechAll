@@ -354,6 +354,7 @@
                     createRSMChart(filteredData);
                     createFilterOptions();
                     setupLazyLoading();
+                    setupChartClickHandler();
                 },
                 error: function(error) {
                     showError("Error parsing CSV: " + error.message);
@@ -701,6 +702,38 @@ function countRepairTechsInData(data) {
             
             // แสดงตาราง
             pivotTableContainerElement.style.display = 'block';
+        }
+        
+        // เพิ่มการจัดการ click ที่พื้นที่ว่างของกราฟ
+        function setupChartClickHandler() {
+            const chartContainer = document.getElementById('chart-container');
+            chartContainer.addEventListener('click', function(event) {
+                // ตรวจสอบว่าคลิกที่พื้นที่ว่างหรือไม่ (ไม่ใช่ที่แท่งกราฟ)
+                if (event.target.tagName === 'CANVAS') {
+                    const rect = event.target.getBoundingClientRect();
+                    const x = event.clientX - rect.left;
+                    const y = event.clientY - rect.top;
+                    
+                    // ตรวจสอบว่าคลิกที่พื้นที่ว่างหรือไม่
+                    const chart = rsmChart;
+                    if (chart && currentFilter) {
+                        const elements = chart.getElementsAtEventForMode(
+                            { x: x, y: y },
+                            'nearest',
+                            { intersect: true },
+                            false
+                        );
+                        
+                        // ถ้าไม่มี elements แสดงว่าคลิกที่พื้นที่ว่าง
+                        if (elements.length === 0) {
+                            currentFilter = null;
+                            createDashboardSummary(allData);
+                            createRSMChart(allData);
+                            showFilterMessage('แสดงข้อมูลทั้งหมด');
+                        }
+                    }
+                }
+            });
         }
         
         // ฟังก์ชัน debounce สำหรับการค้นหา
@@ -1282,8 +1315,42 @@ function countRepairTechsInData(data) {
             renderTable();
         }
         
+        // ตัวแปรสำหรับเก็บสถานะการกรอง
+        let currentFilter = null;
+        
+        // ฟังก์ชันแสดงข้อความแจ้งเตือน
+        function showFilterMessage(message) {
+            // สร้างหรืออัปเดตข้อความแจ้งเตือน
+            let filterMessage = document.getElementById('filter-message');
+            if (!filterMessage) {
+                filterMessage = document.createElement('div');
+                filterMessage.id = 'filter-message';
+                filterMessage.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #3498db;
+                    color: white;
+                    padding: 10px 15px;
+                    border-radius: 5px;
+                    z-index: 1000;
+                    font-weight: bold;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                `;
+                document.body.appendChild(filterMessage);
+            }
+            filterMessage.textContent = message;
+            
+            // ซ่อนข้อความหลังจาก 3 วินาที
+            setTimeout(() => {
+                filterMessage.style.display = 'none';
+            }, 3000);
+        }
+        
         // เพิ่มฟังก์ชันสำหรับสร้างและอัปเดตกราฟ RSM
-        function createRSMChart(data) {
+        function createRSMChart(data, filteredData = null) {
+            // ใช้ข้อมูลที่กรองแล้วถ้ามี หรือใช้ข้อมูลทั้งหมด
+            const chartData = filteredData || data;
             const rsmList = [
                 'RSM1_BMA-West',
                 'RSM2_BMA-East',
@@ -1297,7 +1364,7 @@ function countRepairTechsInData(data) {
 
             // นับจำนวนหัวหน้าตาม RSM และ Type of work
             const installationCounts = rsmList.map(rsm => {
-                return data.filter(row => 
+                return chartData.filter(row => 
                     row['RSM'] === rsm && 
                     row['สถานะกองงาน'] && 
                     row['สถานะกองงาน'].includes('หัวหน้า') &&
@@ -1307,7 +1374,7 @@ function countRepairTechsInData(data) {
             });
 
             const repairCounts = rsmList.map(rsm => {
-                return data.filter(row => 
+                return chartData.filter(row => 
                     row['RSM'] === rsm && 
                     row['สถานะกองงาน'] && 
                     row['สถานะกองงาน'].includes('หัวหน้า') &&
@@ -1347,6 +1414,38 @@ function countRepairTechsInData(data) {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    onClick: function(event, elements) {
+                        // จัดการ click event
+                        if (elements.length > 0) {
+                            const element = elements[0];
+                            const rsmIndex = element.index;
+                            const rsmName = rsmList[rsmIndex];
+                            
+                            // กรองข้อมูลตาม RSM ที่คลิก
+                            const filteredData = data.filter(row => row['RSM'] === rsmName);
+                            currentFilter = rsmName;
+                            
+                            // อัปเดตการ์ดและตารางด้วยข้อมูลที่กรองแล้ว
+                            createDashboardSummary(filteredData);
+                            createRSMChart(data, filteredData);
+                            
+                            // แสดงข้อความแจ้งเตือน
+                            showFilterMessage(`แสดงข้อมูลเฉพาะ ${rsmName.split('_')[0]}`);
+                        } else {
+                            // คลิกที่พื้นที่ว่าง - กลับไปแสดงข้อมูลทั้งหมด
+                            if (currentFilter) {
+                                currentFilter = null;
+                                createDashboardSummary(data);
+                                createRSMChart(data);
+                                showFilterMessage('แสดงข้อมูลทั้งหมด');
+                            }
+                        }
+                    },
+                    onHover: function(event, elements) {
+                        // เปลี่ยน cursor เมื่อ hover
+                        const canvas = event.native.target;
+                        canvas.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+                    },
                     animation: {
                         onComplete: function(animation) {
                             // ยอดรวมเหนือกราฟ: ใช้ Canvas API ใน animation.onComplete
