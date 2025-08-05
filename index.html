@@ -1048,23 +1048,27 @@ function countRepairTechsInData(data) {
             // Get the column names
             const columns = Object.keys(paginatedData[0]);
             
-            // Function to format column header with line breaks
+            // Function to format column header - ไม่ตัดบรรทัด
             function formatColumnHeader(column) {
-                // ไม่ต้องแปลงชื่อคอลัมน์ แค่ตัดคำตามความเหมาะสม
+                // แปลงชื่อคอลัมน์ให้สั้นลงและอยู่ในบรรทัดเดียว
+                const columnMappings = {
+                    'Type of Provider Group': 'Provider Group',
+                    'Type of work': 'Work Type',
+                    'ประเภทการรับงาน': 'Job Type',
+                    'Depot_Name': 'Depot Name',
+                    'Depot_Code': 'Depot Code',
+                    'Tech_Name': 'Tech Name',
+                    'Tech_Surename': 'Tech Surname',
+                    'Tech_ID': 'Tech ID',
+                    'Register_Date': 'Register Date',
+                    'Expire_Date': 'Expire Date',
+                    'บัตรหมดอายุ(วัน)': 'Expire Days',
+                    'จำนวนกองงาน': 'Teams',
+                    'จำนวนช่าง': 'Techs',
+                    'สถานะกองงาน': 'Team Status'
+                };
                 
-                // เพิ่มการตัดบรรทัดตามเครื่องหมายพิเศษหรือตำแหน่งที่เหมาะสม
-                if (column.includes(' of ')) {
-                    return column.replace(' of ', '<br>of<br>');
-                } else if (column.includes('_')) {
-                    return column.replace('_', '<br>');
-                } else if (column.includes(' ')) {
-                    return column.replace(' ', '<br>');
-                } else if (column.length > 8) {
-                    // ถ้าคำยาวเกินไป ให้ตัดคำครึ่งกลาง
-                    const middle = Math.floor(column.length / 2);
-                    return column.substring(0, middle) + '<br>' + column.substring(middle);
-                }
-                return column;
+                return columnMappings[column] || column;
             }
             
             // Define column sizes based on the column name
@@ -1073,9 +1077,9 @@ function countRepairTechsInData(data) {
                 'Provider': 'col-md',
                 'CTM': 'col-sm',
                 'RSM': 'col-md',
-                'Type of Provider Group': 'col-lg',
-                'Type of work': 'col-md',
-                'ประเภทการรับงาน': 'col-md',
+                'Type of Provider Group': 'col-md',
+                'Type of work': 'col-sm',
+                'ประเภทการรับงาน': 'col-sm',
                 'Group': 'col-sm',
                 'Province': 'col-sm',
                 'Depot_Name': 'col-md',
@@ -1101,7 +1105,7 @@ function countRepairTechsInData(data) {
                 const sortingClass = column === currentSortColumn 
                     ? `sorting-${currentSortDirection}` 
                     : 'sorting';
-                tableHeader += `<th class="${colSize} ${sortingClass}" data-column="${column}">${formatColumnHeader(column)}</th>`;
+                tableHeader += `<th class="${colSize} ${sortingClass}" data-column="${column}" style="white-space: nowrap; text-align: center; font-size: 12px; padding: 8px 4px;">${formatColumnHeader(column)}</th>`;
             });
             tableHeader += '</tr></thead>';
             
