@@ -6,7 +6,7 @@
     <title>Data Technician Dashboard</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" media="print" onload="this.media='all'">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <header>
@@ -23,7 +23,8 @@
         <div id="loading" class="loading">
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
                 <div style="border: 5px solid #f3f3f3; border-top: 5px solid #3498db; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite;"></div>
-                <p style="margin-top: 15px;">กำลังโหลดข้อมูล...</p>
+                <p id="loading-text" style="margin-top: 15px;">กำลังโหลดข้อมูล...</p>
+                <p id="loading-status" style="margin-top: 10px; font-size: 0.9rem; color: #666;"></p>
             </div>
             <style>
                 @keyframes spin {
@@ -116,17 +117,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <script>
-        // CSV URL
+        // CSV URL - ใช้ URL เดียวที่ทำงานได้แน่นอน
         const csvUrl = "https://docs.google.com/spreadsheets/d/1phZPRcTJqNiwCGaDWGS-VxSsojiPrPzQPDcoIRHqgWw/export?format=csv&gid=813367910";
         
-        // CORS Proxy URL as fallback
-        const corsProxyUrl = "https://api.allorigins.win/raw?url=";
-        
-        // Flag to track if we should use CORS proxy
-        let useCorsProxy = false;
+        // CORS Proxy URL ที่ทำงานได้ดี
+        const corsProxyUrl = "https://corsproxy.io/?";
         
         // Elements
         const loadingElement = document.getElementById('loading');
+        const loadingTextElement = document.getElementById('loading-text');
+        const loadingStatusElement = document.getElementById('loading-status');
         const tableContainerElement = document.getElementById('table-container');
         const dataTableElement = document.getElementById('data-table');
         const errorMessageElement = document.getElementById('error-message');
@@ -139,6 +139,14 @@
         const downloadExcelElement = document.getElementById('download-excel');
         const pivotTableContainerElement = document.getElementById('pivot-table-container');
         const pivotTableBodyElement = document.getElementById('pivot-table-body');
+        
+        // Update loading status
+        function updateLoadingStatus(message) {
+            if (loadingStatusElement) {
+                loadingStatusElement.textContent = message;
+            }
+            console.log('Loading status:', message);
+        }
         
         // Data state
         let allData = []; // Original filtered data
@@ -190,52 +198,27 @@
                 
                 // ตรวจสอบแคช ถ้ามีและยังไม่หมดอายุให้ใช้แคช
                 if (csvCache && (now - lastFetchTime < CACHE_DURATION)) {
+                    console.log('Using cached data');
                     processData(csvCache);
                     return;
                 }
                 
                 // Show loading message
-                console.log('Fetching data from:', csvUrl);
+                console.log('Fetching data from Google Sheets...');
+                updateLoadingStatus('กำลังโหลดข้อมูลจาก Google Sheets...');
                 
-                // Try direct access first, then CORS proxy as fallback
-                let finalUrl = useCorsProxy ? corsProxyUrl + encodeURIComponent(csvUrl) : csvUrl;
-                console.log('Attempting to fetch from:', finalUrl);
+                // ใช้ CORS proxy เพื่อหลีกเลี่ยงปัญหา CORS
+                const finalUrl = corsProxyUrl + encodeURIComponent(csvUrl);
+                
+                console.log('Fetching from:', finalUrl);
                 
                 // Fetch CSV data
                 const response = await fetch(finalUrl);
                 
-                // Check if response is ok
+                console.log('Response status:', response.status);
+                
                 if (!response.ok) {
-                    if (!useCorsProxy) {
-                        // Try with CORS proxy if direct access failed
-                        console.log('Direct access failed, trying with CORS proxy...');
-                        useCorsProxy = true;
-                        finalUrl = corsProxyUrl + encodeURIComponent(csvUrl);
-                        const proxyResponse = await fetch(finalUrl);
-                        
-                        if (!proxyResponse.ok) {
-                            throw new Error(`HTTP error! status: ${proxyResponse.status} - ${proxyResponse.statusText}`);
-                        }
-                        
-                        const csvText = await proxyResponse.text();
-                        
-                        // Check if csvText is not empty
-                        if (!csvText || csvText.length === 0) {
-                            throw new Error('CSV data is empty');
-                        }
-                        
-                        console.log('CSV data fetched successfully via CORS proxy, length:', csvText.length);
-                        
-                        // บันทึกลงแคช
-                        csvCache = csvText;
-                        lastFetchTime = now;
-                        
-                        // ประมวลผลข้อมูล
-                        processData(csvText);
-                        return;
-                    } else {
-                        throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
-                    }
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
                 const csvText = await response.text();
@@ -246,6 +229,7 @@
                 }
                 
                 console.log('CSV data fetched successfully, length:', csvText.length);
+                        updateLoadingStatus('โหลดข้อมูลสำเร็จ กำลังประมวลผล...');
                 
                 // บันทึกลงแคช
                 csvCache = csvText;
@@ -255,49 +239,64 @@
                 processData(csvText);
             } catch (error) {
                 console.error('Error details:', error);
-                
-                // If it's a CORS/network error and we haven't tried the proxy yet, try it now
-                if (!useCorsProxy && (error.name === 'TypeError' || error.message.includes('CORS') || error.message.includes('fetch'))) {
-                    console.log('Network/CORS error detected, retrying with CORS proxy...');
-                    try {
-                        useCorsProxy = true;
-                        const finalUrl = corsProxyUrl + encodeURIComponent(csvUrl);
-                        console.log('Fetching via CORS proxy:', finalUrl);
-                        
-                        const proxyResponse = await fetch(finalUrl);
-                        
-                        if (!proxyResponse.ok) {
-                            throw new Error(`CORS Proxy HTTP error! status: ${proxyResponse.status}`);
-                        }
-                        
-                        const csvText = await proxyResponse.text();
-                        
-                        if (!csvText || csvText.length === 0) {
-                            throw new Error('CSV data is empty from CORS proxy');
-                        }
-                        
-                        console.log('CSV data fetched successfully via CORS proxy, length:', csvText.length);
-                        
-                        csvCache = csvText;
-                        lastFetchTime = now;
-                        
-                        processData(csvText);
-                        return;
-                        
-                    } catch (proxyError) {
-                        console.error('CORS proxy also failed:', proxyError);
-                        showError(`ไม่สามารถโหลดข้อมูลได้ทั้งแบบตรงและผ่าน proxy: ${proxyError.message}`);
-                        return;
-                    }
-                }
-                
                 showError(`เกิดข้อผิดพลาดในการโหลดข้อมูล: ${error.message}`);
-                
-                // Show additional debugging info
-                if (error.name === 'TypeError' && error.message.includes('fetch')) {
-                    showError(`ปัญหาการเชื่อมต่อ: ไม่สามารถเข้าถึง Google Sheets ได้ (อาจเป็นปัญหา CORS)`);
-                }
             }
+        }
+        
+        // ฟังก์ชันโหลดข้อมูลตัวอย่าง
+        function loadSampleData() {
+            console.log('Loading sample data as fallback...');
+            updateLoadingStatus('กำลังโหลดข้อมูลตัวอย่าง...');
+            
+            // สร้างข้อมูลตัวอย่าง
+            const sampleData = [
+                {
+                    'Area': 'UPC',
+                    'Provider': 'WW-Provider',
+                    'CTM': 'สมุทรสงคราม',
+                    'RSM': 'RSM7_UPC-CEW',
+                    'Type of Provider Group': 'Install-Repair',
+                    'Type of work': 'Repair',
+                    'ประเภทการรับงาน': 'Multi Skill',
+                    'Group': 'W&W',
+                    'Province': 'สมุทรสงคราม',
+                    'Depot_Name': 'บริษัท ทองเซลลูล่าร์ กรุ๊ป จำกัด',
+                    'Depot_Code': '05-C750',
+                    'O-Type': 'Repair',
+                    'จำนวนกองงาน': '1',
+                    'จำนวนช่าง': '1',
+                    'Tech_Name': 'ชาตรี',
+                    'Tech_Surename': 'ออกประทุม',
+                    'Tech_ID': '333042',
+                    'Register_Date': '02/27',
+                    'Expire_Date': '28/02/27',
+                    'บัตรหมดอายุ(วัน)': '531',
+                    'Status': 'Active',
+                    'สถานะกองงาน': 'หัวหน้า'
+                }
+            ];
+            
+            // ประมวลผลข้อมูลตัวอย่าง
+            allData = sampleData;
+            displayData = [...allData];
+            
+            setTimeout(() => {
+                loadingElement.style.display = 'none';
+            }, 500);
+            
+            document.getElementById('dashboard').style.display = 'flex';
+            document.getElementById('chart-container').style.display = 'block';
+            pivotTableContainerElement.style.display = 'block';
+            tableContainerElement.style.display = 'block';
+            
+            createDashboardSummary(sampleData);
+            createRSMChart(sampleData);
+            createFilterOptions();
+            setupLazyLoading();
+            setupChartClickHandler();
+            
+            // แสดงข้อความเตือน
+            showError('ไม่สามารถโหลดข้อมูลจาก Google Sheets ได้ กำลังแสดงข้อมูลตัวอย่าง');
         }
         
         // เพิ่มการโหลดข้อมูลแบบ lazy loading
@@ -331,24 +330,49 @@
         
         // ปรับปรุงฟังก์ชัน processData ให้ใช้ lazy loading
         function processData(csvText) {
+            console.log('Processing CSV data, length:', csvText.length);
+            console.log('First 500 characters:', csvText.substring(0, 500));
+            
             Papa.parse(csvText, {
                 header: true,
                 complete: function(results) {
+                    console.log('Papa Parse results:', results);
                     const data = results.data;
-                    const columnsToKeep = [0, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 16, 17, 18, 19, 22, 24, 25, 27, 31];
-                    const filteredData = filterColumns(data, columnsToKeep);
-                    
-                    // กรอง "MPLS", "Other", "Audit(QC)", "Solar" ออกจากคอลัมน์ "Type of work"
-                    filteredData.forEach(row => {
-                        if (row['Type of work'] === 'MPLS' || row['Type of work'] === 'Other' || row['Type of work'] === 'Audit(QC)' || row['Type of work'] === 'Solar') {
-                            row['Type of work'] = '';
+                    console.log('Raw data length:', data.length);
+                    // ใช้ชุดคอลัมน์ให้ตรงกับที่ต้องการแสดง: ตัด I (index 8) ออก และเพิ่ม O (index 14)
+                    // กรองข้อมูลเฉพาะ Provider ที่ต้องการ
+                    const filteredData = data.filter(row => {
+                        // กรองเฉพาะ Provider ที่ต้องการ
+                        const provider = row['Provider'] || '';
+                        const validProviders = ['WW-Provider', 'เถ้าแก่เทค', 'True Tech'];
+                        
+                        // ถ้า Provider ตรงกับที่ต้องการ ให้ผ่าน
+                        if (validProviders.includes(provider)) {
+                            return true;
                         }
+                        
+                        return false;
                     });
+                    
+                    console.log('Filtered by Provider:', filteredData.length, 'rows from', data.length);
+                    console.log('Sample filtered row:', filteredData[0]);
+                    
+                    // ไม่กรองข้อมูลก่อน เพื่อให้แสดงข้อมูลทั้งหมด
+                    // filteredData.forEach(row => {
+                    //     if (row['Type of work'] === 'MPLS' || row['Type of work'] === 'Other' || row['Type of work'] === 'Audit(QC)' || row['Type of work'] === 'Solar') {
+                    //         row['Type of work'] = '';
+                    //     }
+                    // });
                     
                     allData = filteredData;
                     displayData = [...allData];
                     
+                    console.log('Final data ready:', allData.length, 'records');
+                    updateLoadingStatus('เสร็จสิ้น!');
+                    
+                    setTimeout(() => {
                     loadingElement.style.display = 'none';
+                    }, 500);
                     document.getElementById('dashboard').style.display = 'flex';
                     document.getElementById('chart-container').style.display = 'block';
                     pivotTableContainerElement.style.display = 'block';
@@ -370,71 +394,52 @@
         function filterColumns(data, columnsToKeep) {
             if (data.length === 0) return [];
             
-            // Get all column names
             const allColumns = Object.keys(data[0]);
             
-            // Define the columns to keep (by their indices - 0-based for JavaScript)
-            // A,B,D,E,F,G,H,J,K,L,N,O,P,Q,R,S,T,W,Y,Z,AB,AF (เพิ่ม O ที่ index 14)
-            // เลือกตามอักษร: A=0, B=1, D=3, E=4, F=5, G=6, H=7, J=9, K=10, L=11, N=13, O=14, P=15, Q=16, R=17, S=18, T=19, W=22, Y=24, Z=25, AB=27, AF=31
-            const selectedColumnIndices = [0, 1, 3, 4, 5, 6, 7, 9, 10, 11, 13, 14, 15, 16, 17, 18, 19, 22, 24, 25, 27, 31];
-            
-            // Create a filtered subset of columns to keep
-            const selectedColumns = selectedColumnIndices.map(index => {
-                // Make sure index is within bounds
-                if (index < allColumns.length) {
-                    return allColumns[index];
-                }
-                return null;
-            }).filter(col => col !== null);
-            
-            // Get column B name (index 1) and column I name (index 8) - ยังใช้ในการกรองข้อมูล
-            const columnBName = allColumns[1];
-            const columnIName = allColumns[8]; // Column I - ยังใช้ในการกรอง แต่ไม่แสดงในตาราง
-            
-            // Create new data array with only the selected columns AND filtered rows
+    // ใช้รายการ columnsToKeep ที่ส่งเข้ามา (คงโครงสร้างเดิม แต่อัปเดต index แล้ว)
+    const selectedColumnIndices = columnsToKeep;
+    const selectedColumns = selectedColumnIndices
+        .map(i => (i < allColumns.length ? allColumns[i] : null))
+        .filter(Boolean);
+
+    const columnBName = allColumns[1];   // Provider
+    const columnIName = allColumns[8];   // Group (ใช้กรอง TVG แต่ไม่แสดง)
+    const columnOTypeName = allColumns[14]; // O-Type
+    const columnTypeOfWork = allColumns[6];  // Type of work
+
+    const allowedOType = new Set(['FTTB', 'FTTH', 'FTTH-MDU', 'REPAIR']);
+
             return data
                 .filter(row => {
-                    // กรองเงื่อนไขเดิม: (row[columnBName] === "WW-Provider" || row[columnBName] === "เถ้าแก่เทค" || row[columnBName] === "True Tech") และ row[columnIName] !== "TVG"
-                    const basicCondition = (row[columnBName] === "WW-Provider" || row[columnBName] === "เถ้าแก่เทค" || row[columnBName] === "True Tech") && row[columnIName] !== "TVG";
-                    
-                    // เพิ่มเงื่อนไขสำหรับกรอง O-Type (index 14)
-                    const columnOTypeName = allColumns[14]; // Column O
-                    if (columnOTypeName && row[columnOTypeName]) {
-                        const oTypeValue = row[columnOTypeName].toString();
-                        // กรองเฉพาะ "FTTB", "FTTH", "FTTH-MDU", "Repair"
-                        if (!["FTTB", "FTTH", "FTTH-MDU", "Repair"].includes(oTypeValue)) {
-                            return false; // ไม่นำแถวนี้มาใช้
-                        }
-                    }
-                    
-                    // เพิ่มเงื่อนไขสำหรับกรอง Type of work 
-                    // ตรวจสอบว่ามีคอลัมน์ที่เป็น Type of work หรือไม่
-                    const columnTypeOfWork = selectedColumns.find(col => col === 'Type of work');
-                    
-                    // ถ้ามีคอลัมน์ Type of work ให้กรองแถวที่มีค่า MPLS, Other, Audit(QC), Solar ออก
-                    if (columnTypeOfWork && (row[columnTypeOfWork] === 'MPLS' || row[columnTypeOfWork] === 'Other' || row[columnTypeOfWork] === 'Audit(QC)' || row[columnTypeOfWork] === 'Solar')) {
-                        return false; // ไม่นำแถวนี้มาใช้
-                    }
-                    
-                    // เพิ่มเงื่อนไขสำหรับกรอง Type of Provider Group
-                    // ตรวจสอบว่ามีคอลัมน์ที่เป็น Type of Provider Group หรือไม่
-                    const columnTypeOfProviderGroup = selectedColumns.find(col => col === 'Type of Provider Group');
-                    
-                    // ถ้ามีคอลัมน์ Type of Provider Group ให้กรองแถวที่มีค่า Audit(QC), Other, Solar ออก
-                    if (columnTypeOfProviderGroup && (row[columnTypeOfProviderGroup] === 'Audit(QC)' || row[columnTypeOfProviderGroup] === 'Other' || row[columnTypeOfProviderGroup] === 'Solar')) {
-                        return false; // ไม่นำแถวนี้มาใช้
-                    }
-                    
-                    return basicCondition; // ใช้เงื่อนไขเดิม
+            // เงื่อนไขพื้นฐานเดิม
+            const basicCondition =
+                (row[columnBName] === 'WW-Provider' ||
+                 row[columnBName] === 'เถ้าแก่เทค' ||
+                 row[columnBName] === 'True Tech') &&
+                row[columnIName] !== 'TVG';
+
+            if (!basicCondition) return false;
+
+            // อนุญาตเฉพาะ Type of work ที่ไม่ใช่ MPLS/Other/Audit(QC)/Solar
+            const workVal = (row[columnTypeOfWork] || '').toString();
+            if (['MPLS', 'Other', 'Audit(QC)', 'Solar'].some(x => workVal === x)) return false;
+
+            // เงื่อนไข O-Type: ยอมรับ FTTB/FTTH/FTTH-MDU/REPAIR (ไม่ติดเคส ว่างมี space ได้)
+            const oTypeRaw = (row[columnOTypeName] || '').toString().trim().toUpperCase();
+
+            // ถ้าเป็นงาน Repair ให้ผ่าน แม้ O-Type ว่าง
+            const isRepairWork = workVal.toLowerCase().includes('repair');
+
+            // ผ่านหาก O-Type อยู่ใน allowed หรือเป็นงาน Repair
+            if (!isRepairWork && !allowedOType.has(oTypeRaw)) return false;
+
+            return true;
                 })
                 .map(row => {
                     const newRow = {};
                     selectedColumns.forEach(col => {
-                        if (col === 'Type of work' && (row[col] === 'MPLS' || row[col] === 'Other' || row[col] === 'Audit(QC)' || row[col] === 'Solar')) {
-                            newRow[col] = ''; // กำหนดให้เป็นค่าว่าง
-                        } else {
+                // เก็บค่าเดิมทุกคอลัมน์ (ยกเว้นซ่อนค่า Work ที่ไม่ต้องการ ซึ่งกรองทิ้งไปแล้ว)
                             newRow[col] = row[col];
-                        }
                     });
                     return newRow;
                 });
@@ -1775,11 +1780,13 @@ function countRepairTechsInData(data) {
             }, 500);
         }
         
-        // Initialize
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
         loadingElement.style.display = 'block';
         fetchDataAndVisualize();
         initializeVisitorCounter();
         setupGlobalClickHandler();
+        });
     </script>
 </body>
 </html>
