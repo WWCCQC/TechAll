@@ -341,12 +341,11 @@
                     console.log('Raw data length:', data.length);
                     // ใช้ชุดคอลัมน์ให้ตรงกับที่ต้องการแสดง: ตัด I (index 8) ออก และเพิ่ม O (index 14)
                     // กรองข้อมูลเฉพาะ Provider ที่ต้องการและเลือกเฉพาะคอลัมน์ที่ต้องการ
-                    // A=0, B=1, D=3, E=4, F=5, G=6, H=7, J=9, K=10, L=11, N=13, O=14, P=15, Q=16, R=17, S=18, T=19, W=22, Y=24, Z=25, AB=27, AF=31
+                    // A=0, B=1, D=3, E=4, F=5, G=6, H=7, J=9, K=10, L=11, N=13, O=14, P=15, Q=16, R=17, S=18, T=19, W=22, Y=24, Z=25, AB=27 (ไม่รวม AF)
                     const columnsToKeep = ['Area', 'Provider', 'CTM', 'RSM', 'Type of Provider Group', 'Type of work', 
                                          'ประเภทการรับงาน', 'Province', 'Depot_Name', 'Depot_Code', 'Team_Name', 
                                          'Type', 'จำนวนกองงาน', 'จำนวนช่าง', 'สถานะกองงาน', 'Tech_Name', 
-                                         'Tech_Surename', 'Tech_ID', 'Register_Date', 'Expire_Date', 'บัตรหมดอายุ(วัน)', 
-                                         'Email'];
+                                         'Tech_Surename', 'Tech_ID', 'Register_Date', 'Expire_Date', 'บัตรหมดอายุ(วัน)'];
                     
                     const filteredData = data.filter(row => {
                         // กรองเฉพาะ Provider ที่ต้องการ
