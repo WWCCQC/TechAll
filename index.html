@@ -352,7 +352,13 @@
                         // กรองเฉพาะ Provider ที่ต้องการ
                         const provider = row['Provider'] || '';
                         const validProviders = ['WW-Provider', 'เถ้าแก่เทค', 'True Tech'];
-                        return validProviders.includes(provider);
+                        
+                        // กรองเฉพาะ Type of work ที่ต้องการ (คอลัมน์ G)
+                        const typeOfWork = row['Type of work'] || '';
+                        const validWorkTypes = ['Installation', 'Repair'];
+                        
+                        // ต้องผ่านทั้ง Provider และ Type of work
+                        return validProviders.includes(provider) && validWorkTypes.includes(typeOfWork);
                     }).map(row => {
                         // เลือกเฉพาะคอลัมน์ที่ต้องการ
                         const newRow = {};
@@ -364,7 +370,8 @@
                         return newRow;
                     });
                     
-                    console.log('Filtered by Provider and Columns:', filteredData.length, 'rows from', data.length);
+                    console.log('Filtered by Provider and Type of work:', filteredData.length, 'rows from', data.length);
+                    console.log('Filters applied: Provider (WW-Provider, เถ้าแก่เทค, True Tech) AND Type of work (Installation, Repair)');
                     console.log('Columns in filtered data:', Object.keys(filteredData[0] || {}));
                     console.log('Sample filtered row:', filteredData[0]);
                     
