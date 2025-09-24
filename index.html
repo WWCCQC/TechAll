@@ -53,6 +53,51 @@
                         margin-bottom: 10px;
                     }
                 }
+                
+                /* Enable text selection for chart titles and legends */
+                .chart-container {
+                    position: relative;
+                }
+                
+                /* Make canvas non-interactive for text selection */
+                .chart-container canvas {
+                    pointer-events: none !important;
+                    user-select: none !important;
+                    -webkit-user-select: none !important;
+                    -moz-user-select: none !important;
+                    -ms-user-select: none !important;
+                }
+                
+                /* Create overlay for text selection */
+                .chart-container::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    z-index: 10;
+                    pointer-events: none;
+                }
+                
+                /* Allow text selection on chart title area */
+                .chart-container .chart-title-overlay {
+                    position: absolute;
+                    top: 5px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    width: auto;
+                    height: auto;
+                    z-index: 20;
+                    user-select: text !important;
+                    -webkit-user-select: text !important;
+                    -moz-user-select: text !important;
+                    -ms-user-select: text !important;
+                    cursor: text !important;
+                    pointer-events: auto !important;
+                    padding: 5px 10px;
+                    margin: 0 10px;
+                }
             </style>
         </div>
         
@@ -138,44 +183,47 @@
             <!-- กราฟ Provider Chart (ซ้าย) -->
             <div id="provider-chart-container" class="chart-container" style="display: none; margin: 0; width: 48%; height: 400px;">
                 <canvas id="providerChart"></canvas>
+                <div class="chart-title-overlay" style="text-align: center; font-weight: bold; font-size: 14px; color: #333; background: rgba(255,255,255,0.9); border-radius: 3px; white-space: nowrap;">จำนวนกองงานตาม RSM และ Provider</div>
             </div>
             
             <!-- กราฟ RSM Chart (ขวา) -->
             <div id="chart-container" class="chart-container" style="display: none; margin: 0; width: 48%; height: 400px;">
-                <canvas id="rsmChart"></canvas>
+                    <canvas id="rsmChart"></canvas>
+                <div class="chart-title-overlay" style="text-align: center; font-weight: bold; font-size: 14px; color: #333; background: rgba(255,255,255,0.9); border-radius: 3px; white-space: nowrap;">จำนวนกองงานช่างติดตั้งและงานซ่อมตาม RSM</div>
             </div>
-        </div>
-        
+                </div>
+                
         <!-- กราฟ CTM Chart ใหม่ -->
         <div id="ctm-chart-container" class="chart-container" style="display: none; margin: 20px 0; width: 100%; height: 500px;">
             <canvas id="ctmChart"></canvas>
+            <div class="chart-title-overlay" style="text-align: center; font-weight: bold; font-size: 14px; color: #333; background: rgba(255,255,255,0.9); border-radius: 3px; white-space: nowrap;">จำนวนกองงานตาม CTM และ Provider</div>
         </div>
         
         <!-- ตาราง Pivot Table สรุปกองงานช่าง -->
         <div id="pivot-table-container" class="pivot-table-container" style="display: none; margin: 20px auto; max-width: 600px;">
             <h3 style="margin-bottom: 15px; color: var(--secondary-color); font-size: 1.2rem; text-align: center;">สรุปกองงานช่าง</h3>
             <table id="pivot-table" class="pivot-table" style="width: 100%;">
-                <thead>
-                    <tr>
-                        <th>Provider</th>
-                        <th>Install</th>
-                        <th>Repair</th>
-                        <th>รวม</th>
-                    </tr>
-                </thead>
-                <tbody id="pivot-table-body">
-                    <!-- ข้อมูลจะถูกเพิ่มที่นี่ด้วย JavaScript -->
-                </tbody>
-                <tfoot>
-                    <tr id="pivot-total-row">
-                        <th>รวม</th>
-                        <th id="total-installation">0</th>
-                        <th id="total-repair">0</th>
-                        <th id="grand-total">0</th>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
+                    <thead>
+                        <tr>
+                            <th>Provider</th>
+                            <th>Install</th>
+                            <th>Repair</th>
+                            <th>รวม</th>
+                        </tr>
+                    </thead>
+                        <tbody id="pivot-table-body">
+                            <!-- ข้อมูลจะถูกเพิ่มที่นี่ด้วย JavaScript -->
+                        </tbody>
+                        <tfoot>
+                            <tr id="pivot-total-row">
+                                <th>รวม</th>
+                                <th id="total-installation">0</th>
+                                <th id="total-repair">0</th>
+                                <th id="grand-total">0</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+            </div>
 
         
         <div id="table-container" class="table-container" style="display: none;">
@@ -1829,15 +1877,7 @@ function countRepairTechsInData(data) {
                     },
                     plugins: {
                         title: {
-                            display: true,
-                            text: 'จำนวนกองงานแยกตาม RSM และประเภทงาน',
-                            font: {
-                                size: 16
-                            },
-                            padding: {
-                                top: 10,
-                                bottom: 15
-                            }
+                            display: false
                         },
                         legend: {
                             display: true,
@@ -1875,7 +1915,7 @@ function countRepairTechsInData(data) {
                         }
                     },
                     layout: {
-                        padding: {
+                            padding: {
                             top: 30 // เพิ่ม padding สำหรับยอดรวม
                         }
                     }
@@ -2139,15 +2179,7 @@ function countRepairTechsInData(data) {
                     },
                     plugins: {
                         title: {
-                            display: true,
-                            text: 'จำนวนกองงานแยกตาม RSM และ Provider (เฉพาะหัวหน้า)',
-                            font: {
-                                size: 16
-                            },
-                            padding: {
-                                top: 10,
-                                bottom: 15
-                            }
+                            display: false
                         },
                         legend: {
                             display: true,
@@ -2362,15 +2394,7 @@ function countRepairTechsInData(data) {
                     },
                     plugins: {
                         title: {
-                            display: true,
-                            text: 'จำนวนกองงานแยกตาม CTM และ Provider (เฉพาะหัวหน้า)',
-                            font: {
-                                size: 16
-                            },
-                            padding: {
-                                top: 10,
-                                bottom: 15
-                            }
+                            display: false
                         },
                         legend: {
                             display: true,
