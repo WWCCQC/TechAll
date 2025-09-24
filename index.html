@@ -133,51 +133,48 @@
             </div>
         </div>
         
-        <!-- ปรับโครงสร้างใหม่ ให้กราฟและตารางขยายเต็มพื้นที่ -->
+        <!-- ปรับโครงสร้างใหม่: กราฟ 2 อันอยู่ในบรรทัดเดียวกัน -->
         <div id="dashboard-chart-container" style="display: flex; justify-content: space-between; margin-bottom: 20px; gap: 20px; flex-wrap: wrap;">
-            <!-- กราฟและตาราง -->
-            <div style="display: flex; gap: 20px; flex: 1; min-width: 0;">
-                <div id="chart-container" class="chart-container" style="display: none; margin: 0; width: 50%; height: 300px; flex-shrink: 0;">
-                    <canvas id="rsmChart"></canvas>
-                </div>
-                
-                <!-- ตาราง Pivot Table สำหรับกองงานช่าง - ต่อจากกราฟ -->
-                <div id="pivot-table-container" class="pivot-table-container" style="display: none; flex: 0 0 35%; min-width: 300px; height: 300px;">
-                    <h3 style="margin-bottom: 15px; color: var(--secondary-color); font-size: 1.1rem;">สรุปกองงานช่าง</h3>
-                                    <table id="pivot-table" class="pivot-table" style="height: calc(100% - 50px);">
-                    <thead>
-                        <tr>
-                            <th>Provider</th>
-                            <th>Install</th>
-                            <th>Repair</th>
-                            <th>รวม</th>
-                        </tr>
-                    </thead>
-                        <tbody id="pivot-table-body">
-                            <!-- ข้อมูลจะถูกเพิ่มที่นี่ด้วย JavaScript -->
-                        </tbody>
-                        <tfoot>
-                            <tr id="pivot-total-row">
-                                <th>รวม</th>
-                                <th id="total-installation">0</th>
-                                <th id="total-repair">0</th>
-                                <th id="grand-total">0</th>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
+            <!-- กราฟ Provider Chart (ซ้าย) -->
+            <div id="provider-chart-container" class="chart-container" style="display: none; margin: 0; width: 48%; height: 400px;">
+                <canvas id="providerChart"></canvas>
             </div>
             
-        </div>
-        
-        <!-- กราฟ Provider Chart ใหม่ -->
-        <div id="provider-chart-container" class="chart-container" style="display: none; margin: 20px 0; width: 100%; height: 400px;">
-            <canvas id="providerChart"></canvas>
+            <!-- กราฟ RSM Chart (ขวา) -->
+            <div id="chart-container" class="chart-container" style="display: none; margin: 0; width: 48%; height: 400px;">
+                <canvas id="rsmChart"></canvas>
+            </div>
         </div>
         
         <!-- กราฟ CTM Chart ใหม่ -->
         <div id="ctm-chart-container" class="chart-container" style="display: none; margin: 20px 0; width: 100%; height: 500px;">
             <canvas id="ctmChart"></canvas>
+        </div>
+        
+        <!-- ตาราง Pivot Table สรุปกองงานช่าง -->
+        <div id="pivot-table-container" class="pivot-table-container" style="display: none; margin: 20px auto; max-width: 600px;">
+            <h3 style="margin-bottom: 15px; color: var(--secondary-color); font-size: 1.2rem; text-align: center;">สรุปกองงานช่าง</h3>
+            <table id="pivot-table" class="pivot-table" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th>Provider</th>
+                        <th>Install</th>
+                        <th>Repair</th>
+                        <th>รวม</th>
+                    </tr>
+                </thead>
+                <tbody id="pivot-table-body">
+                    <!-- ข้อมูลจะถูกเพิ่มที่นี่ด้วย JavaScript -->
+                </tbody>
+                <tfoot>
+                    <tr id="pivot-total-row">
+                        <th>รวม</th>
+                        <th id="total-installation">0</th>
+                        <th id="total-repair">0</th>
+                        <th id="grand-total">0</th>
+                    </tr>
+                </tfoot>
+            </table>
         </div>
 
         
