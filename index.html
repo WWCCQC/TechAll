@@ -75,6 +75,15 @@
             </div>
         </div>
         
+        <!-- กราฟ Provider Chart ใหม่ -->
+        <div id="provider-chart-container" class="chart-container" style="display: none; margin: 20px 0; width: 100%; height: 400px;">
+            <canvas id="providerChart"></canvas>
+        </div>
+        
+        <!-- กราฟ CTM Chart ใหม่ -->
+        <div id="ctm-chart-container" class="chart-container" style="display: none; margin: 20px 0; width: 100%; height: 500px;">
+            <canvas id="ctmChart"></canvas>
+        </div>
 
         
         <div id="table-container" class="table-container" style="display: none;">
@@ -160,6 +169,8 @@
         let lastFetchTime = 0; // เวลาที่ดึงข้อมูลครั้งล่าสุด
         const CACHE_DURATION = 5 * 60 * 1000; // 5 นาที (เป็นมิลลิวินาที)
         let rsmChart = null; // สำหรับเก็บอ็อบเจ็กต์ Chart
+        let providerChart = null; // สำหรับเก็บอ็อบเจ็กต์ Provider Chart
+        let ctmChart = null; // สำหรับเก็บอ็อบเจ็กต์ CTM Chart
         
         // Thai date formatter
         function formatThaiDate() {
@@ -286,11 +297,15 @@
             
             document.getElementById('dashboard').style.display = 'flex';
             document.getElementById('chart-container').style.display = 'block';
+            document.getElementById('provider-chart-container').style.display = 'block';
+            document.getElementById('ctm-chart-container').style.display = 'block';
             pivotTableContainerElement.style.display = 'block';
             tableContainerElement.style.display = 'block';
             
             createDashboardSummary(sampleData);
             createRSMChart(sampleData);
+            createProviderChart(sampleData);
+            createCTMChart(sampleData);
             createFilterOptions();
             setupLazyLoading();
             setupChartClickHandler();
@@ -392,11 +407,15 @@
                     }, 500);
                     document.getElementById('dashboard').style.display = 'flex';
                     document.getElementById('chart-container').style.display = 'block';
+                    document.getElementById('provider-chart-container').style.display = 'block';
+                    document.getElementById('ctm-chart-container').style.display = 'block';
                     pivotTableContainerElement.style.display = 'block';
                     tableContainerElement.style.display = 'block';
                     
                     createDashboardSummary(filteredData);
                     createRSMChart(filteredData);
+                    createProviderChart(filteredData);
+                    createCTMChart(filteredData);
                     createFilterOptions();
                     setupLazyLoading();
                     setupChartClickHandler();
@@ -504,6 +523,8 @@
                 // อัปเดตการ์ดและตาราง
                 createDashboardSummary(filteredData);
                 createRSMChart(allData, filteredData);
+                createProviderChart(allData, filteredData);
+                createCTMChart(allData, filteredData);
                 showFilterMessage('แสดงข้อมูลเฉพาะหัวหน้ากองงาน');
                 
                 // เพิ่ม visual feedback
@@ -551,6 +572,8 @@
                 // แสดงข้อมูลทั้งหมด (ไม่กรอง)
                 createDashboardSummary(allData);
                 createRSMChart(allData);
+                createProviderChart(allData);
+                createCTMChart(allData);
                 showFilterMessage('แสดงข้อมูลทั้งหมด');
                 
                 // เพิ่ม visual feedback
@@ -630,6 +653,8 @@ function createInstallTechsCardElement(data) {
                 // อัปเดตการ์ดและตาราง
                 createDashboardSummary(filteredData);
                 createRSMChart(allData, filteredData);
+                createProviderChart(allData, filteredData);
+                createCTMChart(allData, filteredData);
                 showFilterMessage('แสดงข้อมูลเฉพาะช่างติดตั้ง');
                 
                 // เพิ่ม visual feedback
@@ -709,6 +734,8 @@ function countRepairTechsInData(data) {
                 // อัปเดตการ์ดและตาราง
                 createDashboardSummary(filteredData);
                 createRSMChart(allData, filteredData);
+                createProviderChart(allData, filteredData);
+                createCTMChart(allData, filteredData);
                 showFilterMessage('แสดงข้อมูลเฉพาะช่างซ่อม');
                 
                 // เพิ่ม visual feedback
@@ -901,6 +928,8 @@ function countRepairTechsInData(data) {
             currentFilter = null;
             createDashboardSummary(allData);
             createRSMChart(allData);
+            createProviderChart(allData);
+            createCTMChart(allData);
             showFilterMessage('แสดงข้อมูลทั้งหมด');
             
             // ลบไฮไลท์จากทุกการ์ด
@@ -957,6 +986,8 @@ function countRepairTechsInData(data) {
             
             // อัปเดตการ์ดข้อมูลสรุปใหม่หลังการค้นหา
             createDashboardSummary(displayData);
+            createProviderChart(displayData);
+            createCTMChart(displayData);
             
             // Apply current sorting if any
             if (currentSortColumn) {
@@ -1229,6 +1260,8 @@ function countRepairTechsInData(data) {
             tableContainerElement.style.display = 'none';
             document.getElementById('dashboard').style.display = 'none';
             document.getElementById('chart-container').style.display = 'none';
+            document.getElementById('provider-chart-container').style.display = 'none';
+            document.getElementById('ctm-chart-container').style.display = 'none';
             pivotTableContainerElement.style.display = 'none';
             
             // รีเซ็ตแคชและดึงข้อมูลใหม่
@@ -1504,6 +1537,8 @@ function countRepairTechsInData(data) {
             // อัปเดตการ์ดข้อมูลสรุป กราฟ และตาราง Pivot
             createDashboardSummary(displayData);
             createRSMChart(displayData);
+            createProviderChart(displayData);
+            createCTMChart(displayData);
             
             currentPage = 1;
             renderTable();
@@ -1749,6 +1784,465 @@ function countRepairTechsInData(data) {
                     layout: {
                         padding: {
                             top: 30 // เพิ่ม padding สำหรับยอดรวม
+                        }
+                    }
+                }
+            });
+        }
+        
+        // สร้างฟังก์ชันสำหรับสร้างและอัปเดตกราฟ Provider
+        function createProviderChart(data, filteredData = null) {
+            // ใช้ข้อมูลที่กรองแล้วถ้ามี หรือใช้ข้อมูลทั้งหมด
+            const chartData = filteredData || data;
+            
+            // กรองข้อมูลเฉพาะแถวที่มีคำว่า "หัวหน้า" ในคอลัมน์ "สถานะกองงาน"
+            const leaderData = chartData.filter(row => {
+                const statusValue = row['สถานะกองงาน'];
+                return statusValue && statusValue.toString().includes('หัวหน้า');
+            });
+            
+            // กำหนด RSM list
+            const rsmList = [
+                'RSM1_BMA-West',
+                'RSM2_BMA-East', 
+                'RSM3_UPC-East',
+                'RSM4_UPC-NOR',
+                'RSM5_UPC-NOE1',
+                'RSM6_UPC-NOE2',
+                'RSM7_UPC-CEW',
+                'RSM8_UPC-SOU'
+            ];
+            
+            // กำหนด Provider list
+            const providerList = ['WW-Provider', 'True Tech', 'เถ้าแก่เทค'];
+            
+            // สร้างข้อมูลสำหรับแต่ละ Provider
+            const datasets = providerList.map((provider, providerIndex) => {
+                const data = rsmList.map(rsm => {
+                    return leaderData.filter(row => 
+                        row['RSM'] === rsm && 
+                        row['Provider'] === provider
+                    ).length;
+                });
+                
+                // สีสำหรับแต่ละ Provider
+                const colors = [
+                    { bg: 'rgba(52, 152, 219, 0.8)', border: 'rgba(52, 152, 219, 1)' }, // WW-Provider - น้ำเงิน
+                    { bg: 'rgba(46, 204, 113, 0.8)', border: 'rgba(46, 204, 113, 1)' }, // True Tech - เขียว
+                    { bg: 'rgba(155, 89, 182, 0.8)', border: 'rgba(155, 89, 182, 1)' }  // เถ้าแก่เทค - ม่วง
+                ];
+                
+                return {
+                    label: provider,
+                    data: data,
+                    backgroundColor: colors[providerIndex].bg,
+                    borderColor: colors[providerIndex].border,
+                    borderWidth: 1
+                };
+            });
+            
+            // ถ้ามีกราฟอยู่แล้ว ให้ทำลายก่อนสร้างใหม่
+            if (providerChart) {
+                providerChart.destroy();
+            }
+            
+            // สร้างกราฟใหม่
+            const ctx = document.getElementById('providerChart').getContext('2d');
+            providerChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: rsmList.map(rsm => rsm.split('_')[0]), // แสดงเฉพาะส่วนหน้า _
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    onClick: function(event, elements) {
+                        // จัดการ click event
+                        if (elements.length > 0) {
+                            const element = elements[0];
+                            const rsmIndex = element.index;
+                            const datasetIndex = element.datasetIndex;
+                            const rsmName = rsmList[rsmIndex];
+                            const providerName = providerList[datasetIndex];
+                            
+                            // กรองข้อมูลตาม RSM และ Provider ที่คลิก
+                            const filteredData = data.filter(row => 
+                                row['RSM'] === rsmName && 
+                                row['Provider'] === providerName &&
+                                row['สถานะกองงาน'] && 
+                                row['สถานะกองงาน'].includes('หัวหน้า')
+                            );
+                            
+                            // อัปเดตการ์ดและตารางด้วยข้อมูลที่กรองแล้ว
+                            createDashboardSummary(filteredData);
+                            createRSMChart(data, filteredData);
+                            createProviderChart(data, filteredData);
+                            
+                            // แสดงข้อความแจ้งเตือน
+                            showFilterMessage(`แสดงข้อมูลเฉพาะ ${rsmName.split('_')[0]} - ${providerName}`);
+                        } else {
+                            // คลิกที่พื้นที่ว่าง - กลับไปแสดงข้อมูลทั้งหมด
+                            if (currentFilter) {
+                                currentFilter = null;
+                                createDashboardSummary(data);
+                                createRSMChart(data);
+                                createProviderChart(data);
+                                showFilterMessage('แสดงข้อมูลทั้งหมด');
+                            }
+                        }
+                    },
+                    onHover: function(event, elements) {
+                        // เปลี่ยน cursor เมื่อ hover
+                        const canvas = event.native.target;
+                        canvas.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+                    },
+                    animation: {
+                        onComplete: function(animation) {
+                            // แสดงยอดรวมเหนือแท่งและตัวเลขในแท่ง
+                            const chart = animation.chart;
+                            const ctx = chart.ctx;
+                            
+                            // แสดงจำนวนรวมเหนือกราฟ และตัวเลขในแท่ง
+                            chart.data.labels.forEach(function(label, index) {
+                                // คำนวณยอดรวม: รวมทุก Provider
+                                const total = chart.data.datasets.reduce((sum, dataset) => sum + dataset.data[index], 0);
+                                
+                                if (total > 0) {
+                                    // หา y position ของแท่งบนสุด
+                                    let topY = chart.chartArea.bottom;
+                                    for (let i = chart.data.datasets.length - 1; i >= 0; i--) {
+                                        if (chart.data.datasets[i].data[index] > 0) {
+                                            const meta = chart.getDatasetMeta(i);
+                                            const bar = meta.data[index];
+                                            topY = bar.y;
+                                            break;
+                                        }
+                                    }
+                                    
+                                    // ใช้ x position จาก dataset แรก
+                                    const meta0 = chart.getDatasetMeta(0);
+                                    const bar0 = meta0.data[index];
+                                    
+                                    // วาดยอดรวมเหนือแท่ง
+                                    ctx.fillStyle = '#000000';
+                                    ctx.textAlign = 'center';
+                                    ctx.textBaseline = 'bottom';
+                                    ctx.font = 'bold 14px Arial';
+                                    ctx.fillText(total, bar0.x, topY - 10);
+                                }
+                                
+                                // แสดงตัวเลขในแต่ละแท่ง (คำนวณตำแหน่งกลางของแต่ละส่วนในแท่ง stacked)
+                                let cumulativeHeight = 0;
+                                chart.data.datasets.forEach(function(dataset, datasetIndex) {
+                                    const value = dataset.data[index];
+                                    if (value > 0) {
+                                        const meta = chart.getDatasetMeta(datasetIndex);
+                                        const bar = meta.data[index];
+                                        
+                                        // คำนวณตำแหน่ง Y ที่อยู่กลางของแต่ละส่วนแท่ง
+                                        const barHeight = bar.height;
+                                        const centerY = bar.y + (barHeight / 2);
+                                        
+                                        // ใช้สีขาวสำหรับตัวเลขในแท่ง
+                                        ctx.fillStyle = '#FFFFFF';
+                                        ctx.strokeStyle = '#000000';
+                                        ctx.lineWidth = 1.5;
+                                        ctx.textAlign = 'center';
+                                        ctx.textBaseline = 'middle';
+                                        ctx.font = 'bold 12px Arial';
+                                        
+                                        // แสดงตัวเลขตรงกลางของแต่ละส่วนแท่ง
+                                        ctx.strokeText(value, bar.x, centerY);
+                                        ctx.fillText(value, bar.x, centerY);
+                                    }
+                                });
+                            });
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'จำนวนกองงานแยกตาม RSM และ Provider (เฉพาะหัวหน้า)',
+                            font: {
+                                size: 16
+                            },
+                            padding: {
+                                top: 10,
+                                bottom: 15
+                            }
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            enabled: true,
+                            callbacks: {
+                                afterBody: function(context) {
+                                    const total = context.reduce((sum, item) => sum + item.parsed.y, 0);
+                                    return `รวม: ${total} กองงาน`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    layout: {
+                        padding: {
+                            top: 30 // เพิ่ม padding สำหรับยอดรวม
+                        }
+                    }
+                }
+            });
+        }
+        
+        // สร้างฟังก์ชันสำหรับสร้างและอัปเดตกราฟ CTM
+        function createCTMChart(data, filteredData = null) {
+            // ใช้ข้อมูลที่กรองแล้วถ้ามี หรือใช้ข้อมูลทั้งหมด
+            const chartData = filteredData || data;
+            
+            // กรองข้อมูลเฉพาะแถวที่มีคำว่า "หัวหน้า" ในคอลัมน์ "สถานะกองงาน"
+            const leaderData = chartData.filter(row => {
+                const statusValue = row['สถานะกองงาน'];
+                return statusValue && statusValue.toString().includes('หัวหน้า');
+            });
+            
+            // ดึงรายการ CTM ที่ไม่ซ้ำกันและนับจำนวนรวม
+            const ctmCounts = {};
+            leaderData.forEach(row => {
+                if (row['CTM']) {
+                    if (!ctmCounts[row['CTM']]) {
+                        ctmCounts[row['CTM']] = 0;
+                    }
+                    ctmCounts[row['CTM']]++;
+                }
+            });
+            
+            // เรียงลำดับ CTM ตามจำนวนรวมจากมากไปน้อย
+            const sortedCtmList = Object.keys(ctmCounts).sort((a, b) => {
+                return ctmCounts[b] - ctmCounts[a];
+            });
+            
+            // แสดง CTM ทั้งหมดที่มีในข้อมูล (เรียงตามจำนวนรวม)
+            const displayCtmList = sortedCtmList;
+            
+            // กำหนด Provider list
+            const providerList = ['WW-Provider', 'True Tech', 'เถ้าแก่เทค'];
+            
+            // สร้างข้อมูลสำหรับแต่ละ Provider
+            const datasets = providerList.map((provider, providerIndex) => {
+                const data = displayCtmList.map(ctm => {
+                    return leaderData.filter(row => 
+                        row['CTM'] === ctm && 
+                        row['Provider'] === provider
+                    ).length;
+                });
+                
+                // สีสำหรับแต่ละ Provider
+                const colors = [
+                    { bg: 'rgba(52, 152, 219, 0.8)', border: 'rgba(52, 152, 219, 1)' }, // WW-Provider - น้ำเงิน
+                    { bg: 'rgba(46, 204, 113, 0.8)', border: 'rgba(46, 204, 113, 1)' }, // True Tech - เขียว
+                    { bg: 'rgba(155, 89, 182, 0.8)', border: 'rgba(155, 89, 182, 1)' }  // เถ้าแก่เทค - ม่วง
+                ];
+                
+                return {
+                    label: provider,
+                    data: data,
+                    backgroundColor: colors[providerIndex].bg,
+                    borderColor: colors[providerIndex].border,
+                    borderWidth: 1
+                };
+            });
+            
+            // ถ้ามีกราฟอยู่แล้ว ให้ทำลายก่อนสร้างใหม่
+            if (ctmChart) {
+                ctmChart.destroy();
+            }
+            
+            // สร้างกราฟใหม่
+            const ctx = document.getElementById('ctmChart').getContext('2d');
+            ctmChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: displayCtmList,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    onClick: function(event, elements) {
+                        // จัดการ click event
+                        if (elements.length > 0) {
+                            const element = elements[0];
+                            const ctmIndex = element.index;
+                            const datasetIndex = element.datasetIndex;
+                            const ctmName = displayCtmList[ctmIndex];
+                            const providerName = providerList[datasetIndex];
+                            
+                            // กรองข้อมูลตาม CTM และ Provider ที่คลิก
+                            const filteredData = data.filter(row => 
+                                row['CTM'] === ctmName && 
+                                row['Provider'] === providerName &&
+                                row['สถานะกองงาน'] && 
+                                row['สถานะกองงาน'].includes('หัวหน้า')
+                            );
+                            
+                            // อัปเดตการ์ดและตารางด้วยข้อมูลที่กรองแล้ว
+                            createDashboardSummary(filteredData);
+                            createRSMChart(data, filteredData);
+                            createProviderChart(data, filteredData);
+                            createCTMChart(data, filteredData);
+                            
+                            // แสดงข้อความแจ้งเตือน
+                            showFilterMessage(`แสดงข้อมูลเฉพาะ ${ctmName} - ${providerName}`);
+                        } else {
+                            // คลิกที่พื้นที่ว่าง - กลับไปแสดงข้อมูลทั้งหมด
+                            if (currentFilter) {
+                                currentFilter = null;
+                                createDashboardSummary(data);
+                                createRSMChart(data);
+                                createProviderChart(data);
+                                createCTMChart(data);
+                                showFilterMessage('แสดงข้อมูลทั้งหมด');
+                            }
+                        }
+                    },
+                    onHover: function(event, elements) {
+                        // เปลี่ยน cursor เมื่อ hover
+                        const canvas = event.native.target;
+                        canvas.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+                    },
+                    animation: {
+                        onComplete: function(animation) {
+                            // แสดงยอดรวมเหนือแท่งและตัวเลขในแท่ง
+                            const chart = animation.chart;
+                            const ctx = chart.ctx;
+                            
+                            // แสดงจำนวนรวมเหนือกราฟ และตัวเลขในแท่ง
+                            chart.data.labels.forEach(function(label, index) {
+                                // คำนวณยอดรวม: รวมทุก Provider
+                                const total = chart.data.datasets.reduce((sum, dataset) => sum + dataset.data[index], 0);
+                                
+                                if (total > 0) {
+                                    // หา y position ของแท่งบนสุด
+                                    let topY = chart.chartArea.bottom;
+                                    for (let i = chart.data.datasets.length - 1; i >= 0; i--) {
+                                        if (chart.data.datasets[i].data[index] > 0) {
+                                            const meta = chart.getDatasetMeta(i);
+                                            const bar = meta.data[index];
+                                            topY = bar.y;
+                                            break;
+                                        }
+                                    }
+                                    
+                                    // ใช้ x position จาก dataset แรก
+                                    const meta0 = chart.getDatasetMeta(0);
+                                    const bar0 = meta0.data[index];
+                                    
+                                    // วาดยอดรวมเหนือแท่ง
+                                    ctx.fillStyle = '#000000';
+                                    ctx.textAlign = 'center';
+                                    ctx.textBaseline = 'bottom';
+                                    ctx.font = 'bold 14px Arial';
+                                    ctx.fillText(total, bar0.x, topY - 10);
+                                }
+                                
+                                // แสดงตัวเลขในแต่ละแท่ง (คำนวณตำแหน่งกลางของแต่ละส่วนในแท่ง stacked)
+                                chart.data.datasets.forEach(function(dataset, datasetIndex) {
+                                    const value = dataset.data[index];
+                                    if (value > 0) {
+                                        const meta = chart.getDatasetMeta(datasetIndex);
+                                        const bar = meta.data[index];
+                                        
+                                        // คำนวณตำแหน่ง Y ที่อยู่กลางของแต่ละส่วนแท่ง
+                                        const barHeight = bar.height;
+                                        const centerY = bar.y + (barHeight / 2);
+                                        
+                                        // ใช้สีขาวสำหรับตัวเลขในแท่ง
+                                        ctx.fillStyle = '#FFFFFF';
+                                        ctx.strokeStyle = '#000000';
+                                        ctx.lineWidth = 1.5;
+                                        ctx.textAlign = 'center';
+                                        ctx.textBaseline = 'middle';
+                                        ctx.font = 'bold 12px Arial';
+                                        
+                                        // แสดงตัวเลขตรงกลางของแต่ละส่วนแท่ง
+                                        ctx.strokeText(value, bar.x, centerY);
+                                        ctx.fillText(value, bar.x, centerY);
+                                    }
+                                });
+                            });
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'จำนวนกองงานแยกตาม CTM และ Provider (เฉพาะหัวหน้า)',
+                            font: {
+                                size: 16
+                            },
+                            padding: {
+                                top: 10,
+                                bottom: 15
+                            }
+                        },
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            enabled: true,
+                            callbacks: {
+                                afterBody: function(context) {
+                                    const total = context.reduce((sum, item) => sum + item.parsed.y, 0);
+                                    return `รวม: ${total} กองงาน`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                            ticks: {
+                                autoSkip: false,
+                                maxRotation: 90,
+                                minRotation: 45,
+                                font: {
+                                    size: 10
+                                },
+                                callback: function(value, index, ticks) {
+                                    // ตัดข้อความยาวเกินไป
+                                    const label = this.getLabelForValue(value);
+                                    if (label.length > 20) {
+                                        return label.substring(0, 20) + '...';
+                                    }
+                                    return label;
+                                }
+                            }
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    layout: {
+                        padding: {
+                            top: 30, // เพิ่ม padding สำหรับยอดรวม
+                            bottom: 80 // เพิ่ม padding สำหรับ label CTM ที่หมุน
                         }
                     }
                 }
