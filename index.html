@@ -58,48 +58,76 @@
         
         <!-- การ์ดสรุปจำนวน Provider เหนือกราฟ RSM -->
         <div id="provider-cards-container" style="display: none; margin: 20px 0; width: 100%;">
-            <div style="display: flex; gap: 15px; justify-content: space-between;">
+            <div style="display: flex; gap: 10px; justify-content: space-between;">
                 <!-- การ์ดจำนวนรวมทั้งหมด -->
-                <div class="provider-card" style="flex: 1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <div>
-                            <h4 style="margin: 0; font-size: 14px; opacity: 0.9;">กองงานทั้งหมด</h4>
-                            <div id="total-all-providers" style="font-size: 32px; font-weight: bold; margin-top: 5px;">0</div>
-                        </div>
-                        <i class="fas fa-users" style="font-size: 40px; opacity: 0.3;"></i>
+                <div class="provider-card" style="flex: 1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+                        <i class="fas fa-users" style="font-size: 30px; opacity: 0.7; margin-bottom: 8px;"></i>
+                        <h4 style="margin: 0; font-size: 12px; opacity: 0.9;">กองงานทั้งหมด</h4>
+                        <div id="total-all-providers" style="font-size: 28px; font-weight: bold; margin-top: 5px;">0</div>
                     </div>
                 </div>
                 
                 <!-- การ์ด WW-Provider -->
-                <div class="provider-card" style="flex: 1; background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <div>
-                            <h4 style="margin: 0; font-size: 14px; opacity: 0.9;">WW-Provider</h4>
-                            <div id="total-ww-provider" style="font-size: 32px; font-weight: bold; margin-top: 5px;">0</div>
-                        </div>
-                        <i class="fas fa-building" style="font-size: 40px; opacity: 0.3;"></i>
+                <div class="provider-card" style="flex: 1; background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+                        <i class="fas fa-building" style="font-size: 30px; opacity: 0.7; margin-bottom: 8px;"></i>
+                        <h4 style="margin: 0; font-size: 12px; opacity: 0.9;">WW-Provider</h4>
+                        <div id="total-ww-provider" style="font-size: 28px; font-weight: bold; margin-top: 5px;">0</div>
                     </div>
                 </div>
                 
                 <!-- การ์ด True Tech -->
-                <div class="provider-card" style="flex: 1; background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); color: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <div>
-                            <h4 style="margin: 0; font-size: 14px; opacity: 0.9;">True Tech</h4>
-                            <div id="total-true-tech" style="font-size: 32px; font-weight: bold; margin-top: 5px;">0</div>
-                        </div>
-                        <i class="fas fa-tools" style="font-size: 40px; opacity: 0.3;"></i>
+                <div class="provider-card" style="flex: 1; background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); color: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+                        <i class="fas fa-tools" style="font-size: 30px; opacity: 0.7; margin-bottom: 8px;"></i>
+                        <h4 style="margin: 0; font-size: 12px; opacity: 0.9;">True Tech</h4>
+                        <div id="total-true-tech" style="font-size: 28px; font-weight: bold; margin-top: 5px;">0</div>
                     </div>
                 </div>
                 
                 <!-- การ์ด เถ้าแก่เทค -->
-                <div class="provider-card" style="flex: 1; background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%); color: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <div>
-                            <h4 style="margin: 0; font-size: 14px; opacity: 0.9;">เถ้าแก่เทค</h4>
-                            <div id="total-thaokae-tech" style="font-size: 32px; font-weight: bold; margin-top: 5px;">0</div>
-                        </div>
-                        <i class="fas fa-wrench" style="font-size: 40px; opacity: 0.3;"></i>
+                <div class="provider-card" style="flex: 1; background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%); color: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+                        <i class="fas fa-wrench" style="font-size: 30px; opacity: 0.7; margin-bottom: 8px;"></i>
+                        <h4 style="margin: 0; font-size: 12px; opacity: 0.9;">เถ้าแก่เทค</h4>
+                        <div id="total-thaokae-tech" style="font-size: 28px; font-weight: bold; margin-top: 5px;">0</div>
+                    </div>
+                </div>
+                
+                <!-- การ์ดจำนวน Depot ทั้งหมด -->
+                <div class="provider-card" style="flex: 1; background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+                        <i class="fas fa-store" style="font-size: 30px; opacity: 0.7; margin-bottom: 8px;"></i>
+                        <h4 style="margin: 0; font-size: 12px; opacity: 0.9;">Depot ทั้งหมด</h4>
+                        <div id="total-all-depots" style="font-size: 28px; font-weight: bold; margin-top: 5px;">0</div>
+                    </div>
+                </div>
+                
+                <!-- การ์ด Depot WW-Provider -->
+                <div class="provider-card" style="flex: 1; background: linear-gradient(135deg, #5dade2 0%, #2e86de 100%); color: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+                        <i class="fas fa-warehouse" style="font-size: 30px; opacity: 0.7; margin-bottom: 8px;"></i>
+                        <h4 style="margin: 0; font-size: 12px; opacity: 0.9;">Depot WW</h4>
+                        <div id="depot-ww-provider" style="font-size: 28px; font-weight: bold; margin-top: 5px;">0</div>
+                    </div>
+                </div>
+                
+                <!-- การ์ด Depot True Tech -->
+                <div class="provider-card" style="flex: 1; background: linear-gradient(135deg, #48c9b0 0%, #16a085 100%); color: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+                        <i class="fas fa-industry" style="font-size: 30px; opacity: 0.7; margin-bottom: 8px;"></i>
+                        <h4 style="margin: 0; font-size: 12px; opacity: 0.9;">Depot True</h4>
+                        <div id="depot-true-tech" style="font-size: 28px; font-weight: bold; margin-top: 5px;">0</div>
+                    </div>
+                </div>
+                
+                <!-- การ์ด Depot เถ้าแก่เทค -->
+                <div class="provider-card" style="flex: 1; background: linear-gradient(135deg, #bb8fce 0%, #7d3c98 100%); color: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+                        <i class="fas fa-shop" style="font-size: 30px; opacity: 0.7; margin-bottom: 8px;"></i>
+                        <h4 style="margin: 0; font-size: 12px; opacity: 0.9;">Depot เถ้าแก่</h4>
+                        <div id="depot-thaokae-tech" style="font-size: 28px; font-weight: bold; margin-top: 5px;">0</div>
                     </div>
                 </div>
             </div>
@@ -1894,11 +1922,40 @@ function countRepairTechsInData(data) {
                 totalAll++;
             });
             
-            // อัปเดตตัวเลขในการ์ด
+            // นับจำนวน Depot ที่ไม่ซ้ำกันแต่ละ Provider (ใช้ข้อมูลทั้งหมด ไม่ใช่แค่หัวหน้า)
+            const depotsWW = new Set();
+            const depotsTrue = new Set();
+            const depotsThaokae = new Set();
+            const depotsAll = new Set();
+            
+            data.forEach(row => {
+                const provider = row['Provider'];
+                const depotCode = row['Depot_Code'];
+                
+                if (depotCode) {
+                    depotsAll.add(depotCode);
+                    
+                    if (provider === 'WW-Provider') {
+                        depotsWW.add(depotCode);
+                    } else if (provider === 'True Tech') {
+                        depotsTrue.add(depotCode);
+                    } else if (provider === 'เถ้าแก่เทค') {
+                        depotsThaokae.add(depotCode);
+                    }
+                }
+            });
+            
+            // อัปเดตตัวเลขในการ์ดกองงาน
             document.getElementById('total-all-providers').textContent = totalAll.toLocaleString();
             document.getElementById('total-ww-provider').textContent = totalWW.toLocaleString();
             document.getElementById('total-true-tech').textContent = totalTrue.toLocaleString();
             document.getElementById('total-thaokae-tech').textContent = totalThaokae.toLocaleString();
+            
+            // อัปเดตตัวเลขในการ์ด Depot
+            document.getElementById('total-all-depots').textContent = depotsAll.size.toLocaleString();
+            document.getElementById('depot-ww-provider').textContent = depotsWW.size.toLocaleString();
+            document.getElementById('depot-true-tech').textContent = depotsTrue.size.toLocaleString();
+            document.getElementById('depot-thaokae-tech').textContent = depotsThaokae.size.toLocaleString();
         }
         
         // สร้างฟังก์ชันสำหรับสร้างและอัปเดตกราฟ Provider
