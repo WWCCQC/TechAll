@@ -1863,17 +1863,34 @@ function countRepairTechsInData(data) {
                                         const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
                                         const displayText = `${value} (${percentage}%)`;
                                         
-                                        // ใช้สีเทาสำหรับตัวเลขในแท่ง
-                                        ctx.fillStyle = '#666666';
-                                        ctx.strokeStyle = '#FFFFFF';
-                                        ctx.lineWidth = 1;
-                                        ctx.textAlign = 'center';
-                                        ctx.textBaseline = 'middle';
-                                        ctx.font = 'bold 10px Arial';
+                                        // ตรวจสอบความสูงของแท่งเพื่อตัดสินใจว่าจะแสดงข้อความหรือไม่
+                                        const barHeight = Math.abs(bar.height);
                                         
-                                        // แสดงตัวเลขและเปอร์เซ็นต์ตรงกลางแท่ง
-                                        ctx.strokeText(displayText, bar.x, bar.y);
-                                        ctx.fillText(displayText, bar.x, bar.y);
+                                        if (barHeight > 20) { // แสดงข้อความเฉพาะเมื่อแท่งสูงพอ
+                                            // คำนวณตำแหน่งกลางของแท่งแต่ละแท่งสำหรับ stacked bar
+                                            let centerY;
+                                            
+                                            // สำหรับ stacked bar chart
+                                            if (datasetIndex === 0) {
+                                                // Dataset แรก (ช่างติดตั้ง) - แท่งอยู่ด้านล่าง
+                                                centerY = bar.y + (bar.height / 2);
+                                            } else {
+                                                // Dataset ที่สอง (ช่างซ่อม) - แท่งอยู่ด้านบน
+                                                centerY = bar.y + (bar.height / 2);
+                                            }
+                                            
+                                            // ใช้สีขาวสำหรับตัวเลขในแท่งเพื่อให้เห็นชัดเจน
+                                            ctx.fillStyle = '#FFFFFF';
+                                            ctx.strokeStyle = '#000000';
+                                            ctx.lineWidth = 2;
+                                            ctx.textAlign = 'center';
+                                            ctx.textBaseline = 'middle';
+                                            ctx.font = 'bold 11px Arial';
+                                            
+                                            // แสดงตัวเลขและเปอร์เซ็นต์ตรงกลางแท่ง
+                                            ctx.strokeText(displayText, bar.x, centerY);
+                                            ctx.fillText(displayText, bar.x, centerY);
+                                        }
                                     }
                                 });
                             });
