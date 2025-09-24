@@ -64,7 +64,7 @@
                     <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
                         <i class="fas fa-users" style="font-size: 30px; opacity: 0.7; margin-bottom: 8px;"></i>
                         <h4 style="margin: 0; font-size: 12px; opacity: 0.9;">กองงานทั้งหมด</h4>
-                        <div id="total-all-providers" style="font-size: 28px; font-weight: bold; margin-top: 5px;">0</div>
+                        <div id="total-all-providers" style="font-size: 20px; font-weight: bold; margin-top: 5px; white-space: nowrap;">0</div>
                     </div>
                 </div>
                 
@@ -73,7 +73,7 @@
                     <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
                         <i class="fas fa-building" style="font-size: 30px; opacity: 0.7; margin-bottom: 8px;"></i>
                         <h4 style="margin: 0; font-size: 12px; opacity: 0.9;">WW-Provider</h4>
-                        <div id="total-ww-provider" style="font-size: 28px; font-weight: bold; margin-top: 5px;">0</div>
+                        <div id="total-ww-provider" style="font-size: 20px; font-weight: bold; margin-top: 5px; white-space: nowrap;">0</div>
                     </div>
                 </div>
                 
@@ -82,7 +82,7 @@
                     <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
                         <i class="fas fa-tools" style="font-size: 30px; opacity: 0.7; margin-bottom: 8px;"></i>
                         <h4 style="margin: 0; font-size: 12px; opacity: 0.9;">True Tech</h4>
-                        <div id="total-true-tech" style="font-size: 28px; font-weight: bold; margin-top: 5px;">0</div>
+                        <div id="total-true-tech" style="font-size: 20px; font-weight: bold; margin-top: 5px; white-space: nowrap;">0</div>
                     </div>
                 </div>
                 
@@ -91,7 +91,7 @@
                     <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
                         <i class="fas fa-wrench" style="font-size: 30px; opacity: 0.7; margin-bottom: 8px;"></i>
                         <h4 style="margin: 0; font-size: 12px; opacity: 0.9;">เถ้าแก่เทค</h4>
-                        <div id="total-thaokae-tech" style="font-size: 28px; font-weight: bold; margin-top: 5px;">0</div>
+                        <div id="total-thaokae-tech" style="font-size: 20px; font-weight: bold; margin-top: 5px; white-space: nowrap;">0</div>
                     </div>
                 </div>
                 
@@ -1904,7 +1904,13 @@ function countRepairTechsInData(data) {
                 return statusValue && statusValue.toString().includes('หัวหน้า');
             });
             
-            // นับจำนวนกองงานแต่ละ Provider
+            // กรองข้อมูลที่มีคำว่า "หัวหน้า" หรือ "ลูกน้อง" สำหรับนับจำนวนคน
+            const peopleData = data.filter(row => {
+                const statusValue = row['สถานะกองงาน'];
+                return statusValue && (statusValue.toString().includes('หัวหน้า') || statusValue.toString().includes('ลูกน้อง'));
+            });
+            
+            // นับจำนวนกองงานแต่ละ Provider (เฉพาะหัวหน้า)
             let totalAll = 0;
             let totalWW = 0;
             let totalTrue = 0;
@@ -1920,6 +1926,24 @@ function countRepairTechsInData(data) {
                     totalThaokae++;
                 }
                 totalAll++;
+            });
+            
+            // นับจำนวนคนแต่ละ Provider (หัวหน้า + ลูกน้อง)
+            let peopleAll = 0;
+            let peopleWW = 0;
+            let peopleTrue = 0;
+            let peopleThaokae = 0;
+            
+            peopleData.forEach(row => {
+                const provider = row['Provider'];
+                if (provider === 'WW-Provider') {
+                    peopleWW++;
+                } else if (provider === 'True Tech') {
+                    peopleTrue++;
+                } else if (provider === 'เถ้าแก่เทค') {
+                    peopleThaokae++;
+                }
+                peopleAll++;
             });
             
             // นับจำนวน Depot ที่ไม่ซ้ำกันแต่ละ Provider (ใช้ข้อมูลทั้งหมด ไม่ใช่แค่หัวหน้า)
@@ -1945,11 +1969,11 @@ function countRepairTechsInData(data) {
                 }
             });
             
-            // อัปเดตตัวเลขในการ์ดกองงาน
-            document.getElementById('total-all-providers').textContent = totalAll.toLocaleString();
-            document.getElementById('total-ww-provider').textContent = totalWW.toLocaleString();
-            document.getElementById('total-true-tech').textContent = totalTrue.toLocaleString();
-            document.getElementById('total-thaokae-tech').textContent = totalThaokae.toLocaleString();
+            // อัปเดตตัวเลขในการ์ดกองงาน (แสดงจำนวนคนในวงเล็บ)
+            document.getElementById('total-all-providers').innerHTML = `${totalAll.toLocaleString()} <span style="font-size: 14px; opacity: 0.8;">(${peopleAll.toLocaleString()} คน)</span>`;
+            document.getElementById('total-ww-provider').innerHTML = `${totalWW.toLocaleString()} <span style="font-size: 14px; opacity: 0.8;">(${peopleWW.toLocaleString()} คน)</span>`;
+            document.getElementById('total-true-tech').innerHTML = `${totalTrue.toLocaleString()} <span style="font-size: 14px; opacity: 0.8;">(${peopleTrue.toLocaleString()} คน)</span>`;
+            document.getElementById('total-thaokae-tech').innerHTML = `${totalThaokae.toLocaleString()} <span style="font-size: 14px; opacity: 0.8;">(${peopleThaokae.toLocaleString()} คน)</span>`;
             
             // อัปเดตตัวเลขในการ์ด Depot
             document.getElementById('total-all-depots').textContent = depotsAll.size.toLocaleString();
