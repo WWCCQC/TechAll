@@ -1859,17 +1859,21 @@ function countRepairTechsInData(data) {
                                         const meta = chart.getDatasetMeta(datasetIndex);
                                         const bar = meta.data[index];
                                         
-                                        // ใช้สีขาวสำหรับตัวเลขในแท่ง
-                                        ctx.fillStyle = '#FFFFFF';
-                                        ctx.strokeStyle = '#000000';
+                                        // คำนวณเปอร์เซ็นต์
+                                        const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                        const displayText = `${value} (${percentage}%)`;
+                                        
+                                        // ใช้สีเทาสำหรับตัวเลขในแท่ง
+                                        ctx.fillStyle = '#666666';
+                                        ctx.strokeStyle = '#FFFFFF';
                                         ctx.lineWidth = 1;
                                         ctx.textAlign = 'center';
                                         ctx.textBaseline = 'middle';
-                                        ctx.font = 'bold 12px Arial';
+                                        ctx.font = 'bold 10px Arial';
                                         
-                                        // แสดงตัวเลขตรงกลางแท่ง
-                                        ctx.strokeText(value, bar.x, bar.y);
-                                        ctx.fillText(value, bar.x, bar.y);
+                                        // แสดงตัวเลขและเปอร์เซ็นต์ตรงกลางแท่ง
+                                        ctx.strokeText(displayText, bar.x, bar.y);
+                                        ctx.fillText(displayText, bar.x, bar.y);
                                     }
                                 });
                             });
@@ -2157,21 +2161,25 @@ function countRepairTechsInData(data) {
                                         const meta = chart.getDatasetMeta(datasetIndex);
                                         const bar = meta.data[index];
                                         
+                                        // คำนวณเปอร์เซ็นต์
+                                        const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                        const displayText = `${value} (${percentage}%)`;
+                                        
                                         // คำนวณตำแหน่ง Y ที่อยู่กลางของแต่ละส่วนแท่ง
                                         const barHeight = bar.height;
                                         const centerY = bar.y + (barHeight / 2);
                                         
-                                        // ใช้สีขาวสำหรับตัวเลขในแท่ง
-                                        ctx.fillStyle = '#FFFFFF';
-                                        ctx.strokeStyle = '#000000';
+                                        // ใช้สีเทาสำหรับตัวเลขในแท่ง
+                                        ctx.fillStyle = '#666666';
+                                        ctx.strokeStyle = '#FFFFFF';
                                         ctx.lineWidth = 1.5;
                                         ctx.textAlign = 'center';
                                         ctx.textBaseline = 'middle';
-                                        ctx.font = 'bold 12px Arial';
+                                        ctx.font = 'bold 10px Arial';
                                         
-                                        // แสดงตัวเลขตรงกลางของแต่ละส่วนแท่ง
-                                        ctx.strokeText(value, bar.x, centerY);
-                                        ctx.fillText(value, bar.x, centerY);
+                                        // แสดงตัวเลขและเปอร์เซ็นต์ตรงกลางของแต่ละส่วนแท่ง
+                                        ctx.strokeText(displayText, bar.x, centerY);
+                                        ctx.fillText(displayText, bar.x, centerY);
                                     }
                                 });
                             });
@@ -2372,21 +2380,29 @@ function countRepairTechsInData(data) {
                                         const meta = chart.getDatasetMeta(datasetIndex);
                                         const bar = meta.data[index];
                                         
+                                        // คำนวณเปอร์เซ็นต์
+                                        const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                        
                                         // คำนวณตำแหน่ง Y ที่อยู่กลางของแต่ละส่วนแท่ง
                                         const barHeight = bar.height;
                                         const centerY = bar.y + (barHeight / 2);
                                         
-                                        // ใช้สีขาวสำหรับตัวเลขในแท่ง
-                                        ctx.fillStyle = '#FFFFFF';
-                                        ctx.strokeStyle = '#000000';
+                                        // ใช้สีเทาสำหรับตัวเลขในแท่ง
+                                        ctx.fillStyle = '#666666';
+                                        ctx.strokeStyle = '#FFFFFF';
                                         ctx.lineWidth = 1.5;
                                         ctx.textAlign = 'center';
                                         ctx.textBaseline = 'middle';
-                                        ctx.font = 'bold 12px Arial';
                                         
-                                        // แสดงตัวเลขตรงกลางของแต่ละส่วนแท่ง
-                                        ctx.strokeText(value, bar.x, centerY);
-                                        ctx.fillText(value, bar.x, centerY);
+                                        // แสดงจำนวนในบรรทัดแรก
+                                        ctx.font = 'bold 12px Arial';
+                                        ctx.strokeText(value, bar.x, centerY - 6);
+                                        ctx.fillText(value, bar.x, centerY - 6);
+                                        
+                                        // แสดงเปอร์เซ็นต์ในบรรทัดที่สอง
+                                        ctx.font = 'bold 10px Arial';
+                                        ctx.strokeText(`(${percentage}%)`, bar.x, centerY + 6);
+                                        ctx.fillText(`(${percentage}%)`, bar.x, centerY + 6);
                                     }
                                 });
                             });
