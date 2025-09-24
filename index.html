@@ -31,7 +31,78 @@
                     0% { transform: rotate(0deg); }
                     100% { transform: rotate(360deg); }
                 }
+                
+                /* Provider Cards Styles */
+                .provider-card {
+                    transition: transform 0.3s ease, box-shadow 0.3s ease;
+                    cursor: default;
+                }
+                
+                .provider-card:hover {
+                    transform: translateY(-5px);
+                    box-shadow: 0 8px 25px rgba(0,0,0,0.2) !important;
+                }
+                
+                /* Responsive Design for Provider Cards */
+                @media (max-width: 768px) {
+                    #provider-cards-container > div {
+                        flex-direction: column;
+                    }
+                    
+                    .provider-card {
+                        margin-bottom: 10px;
+                    }
+                }
             </style>
+        </div>
+        
+        <!-- การ์ดสรุปจำนวน Provider เหนือกราฟ RSM -->
+        <div id="provider-cards-container" style="display: none; margin: 20px 0; width: 100%;">
+            <div style="display: flex; gap: 15px; justify-content: space-between;">
+                <!-- การ์ดจำนวนรวมทั้งหมด -->
+                <div class="provider-card" style="flex: 1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <h4 style="margin: 0; font-size: 14px; opacity: 0.9;">กองงานทั้งหมด</h4>
+                            <div id="total-all-providers" style="font-size: 32px; font-weight: bold; margin-top: 5px;">0</div>
+                        </div>
+                        <i class="fas fa-users" style="font-size: 40px; opacity: 0.3;"></i>
+                    </div>
+                </div>
+                
+                <!-- การ์ด WW-Provider -->
+                <div class="provider-card" style="flex: 1; background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <h4 style="margin: 0; font-size: 14px; opacity: 0.9;">WW-Provider</h4>
+                            <div id="total-ww-provider" style="font-size: 32px; font-weight: bold; margin-top: 5px;">0</div>
+                        </div>
+                        <i class="fas fa-building" style="font-size: 40px; opacity: 0.3;"></i>
+                    </div>
+                </div>
+                
+                <!-- การ์ด True Tech -->
+                <div class="provider-card" style="flex: 1; background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); color: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <h4 style="margin: 0; font-size: 14px; opacity: 0.9;">True Tech</h4>
+                            <div id="total-true-tech" style="font-size: 32px; font-weight: bold; margin-top: 5px;">0</div>
+                        </div>
+                        <i class="fas fa-tools" style="font-size: 40px; opacity: 0.3;"></i>
+                    </div>
+                </div>
+                
+                <!-- การ์ด เถ้าแก่เทค -->
+                <div class="provider-card" style="flex: 1; background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%); color: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <h4 style="margin: 0; font-size: 14px; opacity: 0.9;">เถ้าแก่เทค</h4>
+                            <div id="total-thaokae-tech" style="font-size: 32px; font-weight: bold; margin-top: 5px;">0</div>
+                        </div>
+                        <i class="fas fa-wrench" style="font-size: 40px; opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </div>
         </div>
         
         <!-- ปรับโครงสร้างใหม่ ให้กราฟและตารางอยู่ด้านซ้าย การ์ดอยู่ด้านขวา -->
@@ -297,6 +368,7 @@
             
             document.getElementById('dashboard').style.display = 'flex';
             document.getElementById('chart-container').style.display = 'block';
+            document.getElementById('provider-cards-container').style.display = 'block';
             document.getElementById('provider-chart-container').style.display = 'block';
             document.getElementById('ctm-chart-container').style.display = 'block';
             pivotTableContainerElement.style.display = 'block';
@@ -304,6 +376,7 @@
             
             createDashboardSummary(sampleData);
             createRSMChart(sampleData);
+            createProviderCards(sampleData);
             createProviderChart(sampleData);
             createCTMChart(sampleData);
             createFilterOptions();
@@ -407,6 +480,7 @@
                     }, 500);
                     document.getElementById('dashboard').style.display = 'flex';
                     document.getElementById('chart-container').style.display = 'block';
+                    document.getElementById('provider-cards-container').style.display = 'block';
                     document.getElementById('provider-chart-container').style.display = 'block';
                     document.getElementById('ctm-chart-container').style.display = 'block';
                     pivotTableContainerElement.style.display = 'block';
@@ -414,6 +488,7 @@
                     
                     createDashboardSummary(filteredData);
                     createRSMChart(filteredData);
+                    createProviderCards(filteredData);
                     createProviderChart(filteredData);
                     createCTMChart(filteredData);
                     createFilterOptions();
@@ -986,6 +1061,7 @@ function countRepairTechsInData(data) {
             
             // อัปเดตการ์ดข้อมูลสรุปใหม่หลังการค้นหา
             createDashboardSummary(displayData);
+            createProviderCards(displayData);
             createProviderChart(displayData);
             createCTMChart(displayData);
             
@@ -1260,6 +1336,7 @@ function countRepairTechsInData(data) {
             tableContainerElement.style.display = 'none';
             document.getElementById('dashboard').style.display = 'none';
             document.getElementById('chart-container').style.display = 'none';
+            document.getElementById('provider-cards-container').style.display = 'none';
             document.getElementById('provider-chart-container').style.display = 'none';
             document.getElementById('ctm-chart-container').style.display = 'none';
             pivotTableContainerElement.style.display = 'none';
@@ -1537,6 +1614,7 @@ function countRepairTechsInData(data) {
             // อัปเดตการ์ดข้อมูลสรุป กราฟ และตาราง Pivot
             createDashboardSummary(displayData);
             createRSMChart(displayData);
+            createProviderCards(displayData);
             createProviderChart(displayData);
             createCTMChart(displayData);
             
@@ -1788,6 +1866,39 @@ function countRepairTechsInData(data) {
                     }
                 }
             });
+        }
+        
+        // สร้างฟังก์ชันสำหรับอัปเดตการ์ด Provider
+        function createProviderCards(data) {
+            // กรองข้อมูลเฉพาะแถวที่มีคำว่า "หัวหน้า" ในคอลัมน์ "สถานะกองงาน"
+            const leaderData = data.filter(row => {
+                const statusValue = row['สถานะกองงาน'];
+                return statusValue && statusValue.toString().includes('หัวหน้า');
+            });
+            
+            // นับจำนวนกองงานแต่ละ Provider
+            let totalAll = 0;
+            let totalWW = 0;
+            let totalTrue = 0;
+            let totalThaokae = 0;
+            
+            leaderData.forEach(row => {
+                const provider = row['Provider'];
+                if (provider === 'WW-Provider') {
+                    totalWW++;
+                } else if (provider === 'True Tech') {
+                    totalTrue++;
+                } else if (provider === 'เถ้าแก่เทค') {
+                    totalThaokae++;
+                }
+                totalAll++;
+            });
+            
+            // อัปเดตตัวเลขในการ์ด
+            document.getElementById('total-all-providers').textContent = totalAll.toLocaleString();
+            document.getElementById('total-ww-provider').textContent = totalWW.toLocaleString();
+            document.getElementById('total-true-tech').textContent = totalTrue.toLocaleString();
+            document.getElementById('total-thaokae-tech').textContent = totalThaokae.toLocaleString();
         }
         
         // สร้างฟังก์ชันสำหรับสร้างและอัปเดตกราฟ Provider
